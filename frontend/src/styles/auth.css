@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+.auth-container {
+    display: flex;
+    min-height: calc(100vh - 80px); /* Adjust based on navbar height */
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-form-section {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem;
+    background: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    color: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+}
+
+.auth-form-section h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #1a1a1a;
+    text-align: center;
+    line-height: 1.2;
+    font-weight: 400; /* Serif headings are usually lighter */
+    font-family: var(--heading-font, serif);
+}
+
+.auth-subtitle {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #666666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: #fcfcfc;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #1a1a1a;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    border-color: #1a1a1a;
+    background: #ffffff;
+}
+
+.form-group input::placeholder {
+    color: #999999;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 0.9rem;
+    background: #1a1a1a;
+    border: 1px solid #1a1a1a;
+    color: #ffffff;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 1rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    margin-top: 1rem;
+}
+
+.auth-btn:hover {
+    background: #333333;
+    border-color: #333333;
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #666666;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 1.5rem;
+}
+
+.auth-footer a {
+    color: #1a1a1a;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    color: #000000;
+}

@@ -1,0 +1,93 @@
+.home-container {
+    padding: 6rem 2rem 4rem 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.hero-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: 4rem;
+    text-align: center;
+}
+
+@media (min-width: 992px) {
+    .hero-section {
+        grid-template-columns: 1fr 1fr;
+        text-align: left;
+        gap: 6rem;
+    }
+}
+
+.hero-content h1 {
+    font-size: 4rem;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+    letter-spacing: -1px;
+}
+
+@media (min-width: 768px) {
+    .hero-content h1 {
+        font-size: 5.5rem;
+    }
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    color: var(--nav-link-color);
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (min-width: 992px) {
+    .hero-content p {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+.hero-graphic {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hero-graphic img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.explore-btn {
+    padding: 0.875rem 2rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: 1px solid var(--button-border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.explore-btn:hover {
+    background: var(--button-hover-bg);
+    border-color: #a3a3a3;
+}
+
+/* emergency ribbon styles moved to navbar.css */
+
+/* Remove old feature styles */
+.features-container,
+.features-section,
+.features-grid,
+.feature-card {
+    display: none;
+}

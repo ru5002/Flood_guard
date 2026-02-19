@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Lora:wght@400;500;600&display=swap');
+
+:root {
+  --primary-bg: #fdfdfc;
+  --text-color: #1a1a1a;
+  --heading-font: 'Lora', 'Georgia', 'Times New Roman', serif;
+  --body-font: 'Inter', 'Helvetica', 'Arial', sans-serif;
+  --nav-link-color: #595959;
+  --border-color: #e5e5e5;
+  --button-bg: #ffffff;
+  --button-text: #1a1a1a;
+  --button-border: #d4d4d4;
+  --button-hover-bg: #f5f5f5;
+}
+
+body {
+  font-family: var(--body-font);
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font);
+  color: var(--text-color);
+  font-weight: 400;
+}
+
+a {
+  color: var(--nav-link-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--text-color);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}

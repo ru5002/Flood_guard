@@ -1,0 +1,22 @@
+.status-card {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: white;
+  color: #1a1a1a;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 220px;
+  border: 1px solid #e5e5e5;
+}
+
+.dot {
+  height: 8px;
+  width: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+}

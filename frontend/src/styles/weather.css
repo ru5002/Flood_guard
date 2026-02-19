@@ -1,0 +1,126 @@
+.weather-page-container {
+    padding: 2rem;
+    min-height: calc(100vh - 70px);
+    background: #ffffff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.weather-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px;
+}
+
+.weather-header h1 {
+    font-size: 2.5rem;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    font-family: var(--heading-font, serif);
+    font-weight: 400;
+}
+
+.search-container {
+    width: 100%;
+    margin-bottom: 3rem;
+    display: flex;
+    justify-content: center;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 600px;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px; /* Minimal radius */
+    box-shadow: none;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-input:focus {
+    border-color: #1a1a1a;
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.weather-card {
+    background: white;
+    border-radius: 8px; /* Consistent minimal radius */
+    padding: 2rem;
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.weather-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+}
+
+.weather-card h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+
+.weather-icon {
+    width: 60px;
+    height: 60px;
+}
+
+.temperature {
+    font-size: 3rem;
+    font-weight: 400;
+    color: #1a1a1a;
+    margin-left: 0.5rem;
+    font-family: var(--heading-font, serif);
+}
+
+.weather-desc {
+    color: #666;
+    text-transform: capitalize;
+    margin-top: 0.5rem;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.weather-details {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
