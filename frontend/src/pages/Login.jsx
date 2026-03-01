@@ -1,22 +1,84 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import '../styles/auth.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Login Data:', formData);
-        // Add login logic here
+        setLoading(true);
+        setError('');
+
+        try {
+            // Logic to check if user is admin or regular user
+            // 1. Try Admin Login
+            try {
+                // Use relative path '/api' which Nginx proxies to backend
+                // OR use absolute URL if not behind Nginx (e.g. localhost:5000)
+                // For Docker setup with Nginx proxy, '/api' is preferred but hardcoded localhost:5000 works if exposed. 
+                // Let's stick to localhost:5000 as per previous setup, but add proper error catching
+                const adminResponse = await axios.post('http://localhost:5000/api/admin/auth/login', {
+                    email: formData.email,
+                    password: formData.password
+                });
+                
+                if (adminResponse.status === 200) {
+                    // Admin Login Success
+                    console.log('Admin login success', adminResponse.data);
+                    localStorage.setItem('adminToken', adminResponse.data.token);
+                    localStorage.setItem('adminData', JSON.stringify(adminResponse.data.admin));
+                    navigate('/admin/dashboard');
+                    return; // Stop execution
+                }
+            } catch (adminError) {
+                // If not an admin (401 or 404), continue to try as a user
+                // We only proceed if it's a "not found" or "unauthorized" which might mean they are a regular user
+                if (adminError.response && adminError.response.status !== 401 && adminError.response.status !== 404) {
+                     console.error("Admin login error:", adminError);
+                     // If it's a server error (500), we probably shouldn't try user login, but for now let's fall through
+                }
+            }
+
+            // 2. Try User Login (Regular User)
+            try {
+                const userResponse = await axios.post('http://localhost:5000/api/users/login', {
+                    email: formData.email,
+                    password: formData.password
+                });
+
+                if (userResponse.status === 200) {
+                     // User Login Success
+                    console.log('User login success', userResponse.data);
+                    localStorage.setItem('userData', JSON.stringify(userResponse.data.user));
+                    // Redirect to Map or Home
+                    navigate('/map');
+                    return;
+                }
+            } catch (userError) {
+                // Both Admin and User login failed
+                console.error("User login error:", userError);
+                setError('Invalid email or password.');
+            }
+
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -25,6 +87,7 @@ const Login = () => {
             <div className="auth-container">
                 <div className="auth-form-section">
                     <h2>Welcome<br />Back!</h2>
+                    {error && <div className="error-message" style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <input
@@ -46,7 +109,9 @@ const Login = () => {
                                 required
                             />
                         </div>
-                        <button type="submit" className="auth-btn">Log In</button>
+                        <button type="submit" className="auth-btn" disabled={loading}>
+                            {loading ? 'Logging in...' : 'Log In'}
+                        </button>
                     </form>
                     <div className="auth-footer">
                         <label className="remember-me">

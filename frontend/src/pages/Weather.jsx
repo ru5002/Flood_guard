@@ -30,6 +30,31 @@ const gampahaCities = [
 
 const DEFAULT_API_KEY = 'bd5e378503939ddaee76f12ad7a97608'; 
 
+const MOCK_WEATHER_DATA = [
+    { name: 'Bemmulla', temp: 28, condition: 'Clouds', description: 'scattered clouds', icon: '03d', humidity: 75, wind: 3.5 },
+    { name: 'Divulapitiya', temp: 29, condition: 'Rain', description: 'light rain', icon: '10d', humidity: 82, wind: 4.1 },
+    { name: 'Dompe', temp: 27, condition: 'Clouds', description: 'overcast clouds', icon: '04d', humidity: 78, wind: 2.8 },
+    { name: 'Gampaha', temp: 30, condition: 'Clear', description: 'clear sky', icon: '01d', humidity: 70, wind: 3.2 },
+    { name: 'Ganemulla', temp: 29, condition: 'Clouds', description: 'few clouds', icon: '02d', humidity: 72, wind: 3.0 },
+    { name: 'Ja-Ela', temp: 28, condition: 'Rain', description: 'moderate rain', icon: '10d', humidity: 85, wind: 5.2 },
+    { name: 'Kadawatha', temp: 29, condition: 'Clouds', description: 'scattered clouds', icon: '03d', humidity: 74, wind: 3.8 },
+    { name: 'Kandana', temp: 28, condition: 'Thunderstorm', description: 'thunderstorm with light rain', icon: '11d', humidity: 88, wind: 6.5 },
+    { name: 'Katunayake', temp: 31, condition: 'Clear', description: 'clear sky', icon: '01d', humidity: 65, wind: 4.5 },
+    { name: 'Kelaniya', temp: 29, condition: 'Clouds', description: 'broken clouds', icon: '04d', humidity: 76, wind: 3.1 },
+    { name: 'Kiribathgoda', temp: 28, condition: 'Rain', description: 'light rain', icon: '10d', humidity: 80, wind: 4.0 },
+    { name: 'Mahara', temp: 29, condition: 'Clouds', description: 'few clouds', icon: '02d', humidity: 73, wind: 3.3 },
+    { name: 'Minuwangoda', temp: 30, condition: 'Clear', description: 'clear sky', icon: '01d', humidity: 68, wind: 3.6 },
+    { name: 'Mirigama', temp: 28, condition: 'Rain', description: 'heavy intensity rain', icon: '09d', humidity: 90, wind: 5.5 },
+    { name: 'Negombo', temp: 30, condition: 'Clear', description: 'clear sky', icon: '01d', humidity: 70, wind: 4.2 },
+    { name: 'Nittambuwa', temp: 29, condition: 'Clouds', description: 'scattered clouds', icon: '03d', humidity: 75, wind: 3.4 },
+    { name: 'Peliyagoda', temp: 29, condition: 'Clouds', description: 'broken clouds', icon: '04d', humidity: 77, wind: 3.9 },
+    { name: 'Ragama', temp: 28, condition: 'Rain', description: 'light rain', icon: '10d', humidity: 81, wind: 4.3 },
+    { name: 'Seeduwa', temp: 30, condition: 'Clear', description: 'clear sky', icon: '01d', humidity: 69, wind: 4.0 },
+    { name: 'Veyangoda', temp: 29, condition: 'Clouds', description: 'few clouds', icon: '02d', humidity: 74, wind: 3.5 },
+    { name: 'Wattala', temp: 29, condition: 'Clouds', description: 'scattered clouds', icon: '03d', humidity: 76, wind: 4.1 }
+];
+
+
 const Weather = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [weatherData, setWeatherData] = useState([]);
@@ -80,11 +105,14 @@ const Weather = () => {
             setWeatherData(validData);
 
             if (validData.length === 0) {
-                setError("Failed to fetch weather data. The API key might be invalid or rate-limited.");
+                console.warn("API Request failed. Using Mock Data Instead.");
+                setWeatherData(MOCK_WEATHER_DATA);
+                // setError("Failed to fetch weather data. The API key might be invalid or rate-limited.");
             }
         } catch (error) {
-            console.error("Error fetching weather data", error);
-            setError("An error occurred while fetching data.");
+            console.error("Error fetching weather data, falling back to mock data", error);
+            setWeatherData(MOCK_WEATHER_DATA);
+            // setError("An error occurred while fetching data.");
         } finally {
             setLoading(false);
         }

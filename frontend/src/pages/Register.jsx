@@ -1,24 +1,52 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import '../styles/auth.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Register = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
         password: '',
-        phone: ''
+        phone: '',
+        zone: '' // Zone is required by the backend schema
     });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Register Data:', formData);
-        // Add register logic here
+        setLoading(true);
+        setError('');
+        
+        try {
+            // Map frontend fields to backend schema (username -> name)
+            const payload = {
+                name: formData.username,
+                email: formData.email,
+                phone: formData.phone,
+                password: formData.password,
+                zone: formData.zone || 'Gampaha' // Default if not selected, or add a selector
+            };
+            
+            const response = await axios.post('http://localhost:5000/api/users/register', payload);
+            
+            if (response.status === 201) {
+                console.log('User registered success:', response.data);
+                navigate('/login'); // Redirect to login page on success
+            }
+        } catch (err) {
+            console.error('Registration failed:', err);
+            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

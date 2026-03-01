@@ -149,7 +149,6 @@ const UserManagement = () => {
                         <h1>Users</h1>
                     </div>
                     <div className="admin-header-right">
-                        <span className="admin-role-badge">{admin?.role}</span>
                         <button onClick={handleLogout} className="btn-logout">Logout</button>
                     </div>
                 </div>
