@@ -35,7 +35,7 @@ const Register = () => {
                 zone: formData.zone || 'Gampaha' // Default if not selected, or add a selector
             };
             
-            const response = await axios.post('http://localhost:5000/api/users/register', payload);
+            const response = await axios.post('/api/users/register', payload);
             
             if (response.status === 201) {
                 console.log('User registered success:', response.data);

@@ -1,0 +1,20 @@
+/* layout.css – shared shell used by Layout.jsx / sidebar pages */
+.app-shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  padding: var(--sp-8) var(--sp-10);
+  background: var(--color-bg);
+  overflow-y: auto;
+}

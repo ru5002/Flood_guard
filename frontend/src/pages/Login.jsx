@@ -30,7 +30,7 @@ const Login = () => {
                 // OR use absolute URL if not behind Nginx (e.g. localhost:5000)
                 // For Docker setup with Nginx proxy, '/api' is preferred but hardcoded localhost:5000 works if exposed. 
                 // Let's stick to localhost:5000 as per previous setup, but add proper error catching
-                const adminResponse = await axios.post('http://localhost:5000/api/admin/auth/login', {
+                const adminResponse = await axios.post('/api/admin/auth/login', {
                     email: formData.email,
                     password: formData.password
                 });
@@ -54,7 +54,7 @@ const Login = () => {
 
             // 2. Try User Login (Regular User)
             try {
-                const userResponse = await axios.post('http://localhost:5000/api/users/login', {
+                const userResponse = await axios.post('/api/users/login', {
                     email: formData.email,
                     password: formData.password
                 });

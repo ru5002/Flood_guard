@@ -47,7 +47,7 @@ const Donate = () => {
                         </button>
                         
                         <div className="secure-badge">
-                            <span>🔒 Secure Payment via Stripe/PayHere</span>
+                            <span>🔒Secure Payment</span>
                         </div>
                     </div>
                 </div>

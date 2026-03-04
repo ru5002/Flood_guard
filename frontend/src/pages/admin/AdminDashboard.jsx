@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, Home } from 'lucide-react';
 import '../../styles/admin.css';
 
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('adminToken');
-            const response = await fetch('http://localhost:5000/api/admin/users/stats', {
+            const response = await fetch('/api/admin/users/stats', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -68,16 +68,16 @@ const AdminDashboard = () => {
                     <h1>FLOODGUARD ADMIN</h1>
                 </div>
                 <nav className="admin-nav">
-                    <Link to="/admin/dashboard" className="admin-nav-link active">
-                        <LayoutDashboard size={20} />
+                    <NavLink to="/admin/dashboard" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <LayoutDashboard size={18} />
                         Dashboard
-                    </Link>
-                    <Link to="/admin/users" className="admin-nav-link">
-                        <Users size={20} />
+                    </NavLink>
+                    <NavLink to="/admin/users" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <Users size={18} />
                         Users
-                    </Link>
+                    </NavLink>
                     <Link to="/" className="admin-nav-link">
-                        <Home size={20} />
+                        <Home size={18} />
                         Back to Site
                     </Link>
                 </nav>
@@ -87,6 +87,7 @@ const AdminDashboard = () => {
                 <div className="admin-header">
                     <div className="admin-header-left">
                         <h1>Dashboard</h1>
+                        <p>Welcome back, {admin?.name || 'Admin'}</p>
                     </div>
                     <div className="admin-header-right">
                         <button onClick={handleLogout} className="btn-logout">Logout</button>

@@ -1,118 +1,123 @@
+/* ─── Donate Page ───────────────────────────────────────────── */
 .donate-container {
-    display: flex;
-    min-height: calc(100vh - 80px);
-    background: #ffffff;
-    font-family: 'Inter', sans-serif;
-    width: 100vw;
-    justify-content: center;
-    padding-top: 2rem;
+  display: flex;
+  min-height: calc(100vh - 64px);
+  background: var(--color-bg);
+  justify-content: center;
+  padding: var(--sp-12) var(--sp-4);
 }
 
 .donate-content {
-    flex: 1;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
+  flex: 1;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
 }
 
+/* ─── Header ──────────────────────────────────────────────── */
 .donate-header {
-    text-align: center;
-    margin-bottom: 3rem;
+  text-align: center;
+  margin-bottom: var(--sp-10);
 }
 
 .donate-header h1 {
-    font-size: 3rem;
-    color: #1a1a1a;
-    margin-bottom: 1rem;
-    line-height: 1.1;
-    font-weight: 400;
-    font-family: var(--heading-font, serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.035em;
+  margin-bottom: var(--sp-4);
+  line-height: 1.1;
 }
 
 .donate-header p {
-    font-size: 1.1rem;
-    color: #666666;
-    margin-bottom: 1rem;
-    line-height: 1.6;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
+/* ─── Card ────────────────────────────────────────────────────── */
 .donation-card {
-    background: #ffffff;
-    padding: 2.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e5e5;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-10);
+  box-shadow: var(--shadow-md);
 }
 
 .donation-card h3 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    color: #1a1a1a;
-    font-weight: 500;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--sp-6);
+  letter-spacing: -0.015em;
 }
 
+/* ─── Amount grid ───────────────────────────────────────────── */
 .amount-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
 }
 
 .amount-btn {
-    padding: 1rem;
-    border: 1px solid #e5e5e5;
-    background: #ffffff;
-    border-radius: 4px;
-    font-weight: 500;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #666666;
+  padding: var(--sp-4);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+  text-align: center;
 }
-
 .amount-btn:hover {
-    border-color: #1a1a1a;
-    color: #1a1a1a;
+  border-color: var(--color-border-focus);
+  color: var(--color-text-primary);
 }
-
 .amount-btn.active {
-    background-color: #1a1a1a;
-    border-color: #1a1a1a;
-    color: white;
-    box-shadow: none;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
 }
 
+/* ─── Custom amount ────────────────────────────────────────── */
 .custom-amount input {
-    width: 100%;
-    padding: 1rem;
-    border: 1px solid #e5e5e5;
-    border-radius: 4px;
-    font-size: 1rem;
-    outline: none;
-    margin-bottom: 2rem;
-    transition: border-color 0.2s;
+  width: 100%;
+  padding: var(--sp-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: var(--text-base);
+  outline: none;
+  margin-bottom: var(--sp-6);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
-
 .custom-amount input:focus {
-    border-color: #1a1a1a;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(17,24,39,.06);
 }
+.custom-amount input::placeholder { color: var(--color-text-muted); }
 
+/* ─── Submit ──────────────────────────────────────────────────── */
 .donate-submit-btn {
-    width: 100%;
-    padding: 1rem;
-    background: #1a1a1a;
-    color: white;
-    font-weight: 500;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s;
+  width: 100%;
+  padding: var(--sp-4);
+  background: var(--color-accent);
+  color: #fff;
+  font-size: var(--text-base);
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background var(--transition), opacity var(--transition);
 }
-.donate-submit-btn:hover {
-    background: #333333;
-}
+.donate-submit-btn:hover { background: var(--color-accent-hover); }
+.donate-submit-btn:disabled { opacity: .55; cursor: not-allowed; }
+
 

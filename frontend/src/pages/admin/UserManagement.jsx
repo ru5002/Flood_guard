@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, Home } from 'lucide-react';
 import '../../styles/admin.css';
 
@@ -38,7 +38,7 @@ const UserManagement = () => {
                 ...(status && { status })
             });
 
-            const response = await fetch(`http://localhost:5000/api/admin/users?${params}`, {
+            const response = await fetch(`/api/admin/users?${params}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -63,7 +63,7 @@ const UserManagement = () => {
     const fetchZones = async () => {
         try {
             const token = localStorage.getItem('adminToken');
-            const response = await fetch('http://localhost:5000/api/admin/users/zones', {
+            const response = await fetch('/api/admin/users/zones', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -80,7 +80,7 @@ const UserManagement = () => {
 
         try {
             const token = localStorage.getItem('adminToken');
-            const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+            const response = await fetch(`/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -98,7 +98,7 @@ const UserManagement = () => {
     const handleToggleActive = async (userId, currentStatus) => {
         try {
             const token = localStorage.getItem('adminToken');
-            const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+            const response = await fetch(`/api/admin/users/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -128,16 +128,16 @@ const UserManagement = () => {
                     <h1>FLOODGUARD ADMIN</h1>
                 </div>
                 <nav className="admin-nav">
-                    <Link to="/admin/dashboard" className="admin-nav-link">
-                        <LayoutDashboard size={20} />
+                    <NavLink to="/admin/dashboard" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <LayoutDashboard size={18} />
                         Dashboard
-                    </Link>
-                    <Link to="/admin/users" className="admin-nav-link active">
-                        <Users size={20} />
+                    </NavLink>
+                    <NavLink to="/admin/users" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <Users size={18} />
                         Users
-                    </Link>
+                    </NavLink>
                     <Link to="/" className="admin-nav-link">
-                        <Home size={20} />
+                        <Home size={18} />
                         Back to Site
                     </Link>
                 </nav>
@@ -325,8 +325,8 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
         try {
             const token = localStorage.getItem('adminToken');
             const url = user
-                ? `http://localhost:5000/api/admin/users/${user._id}`
-                : 'http://localhost:5000/api/admin/users';
+                ? `/api/admin/users/${user._id}`
+                : '/api/admin/users';
             
             const body = { ...formData };
             if (user && !formData.password) {

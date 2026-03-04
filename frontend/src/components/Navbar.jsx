@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './navbar.css';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import logo from '../assets/image.png';
 
 const Navbar = () => {
@@ -23,13 +23,15 @@ const Navbar = () => {
         </div>
         <nav className="navbar">
             <div className="navbar-brand">
-             <Link to="/"><img src={logo} alt="FloodGuard" className="nav-logo" /></Link>   
+             <Link to="/">
+                <img src={logo} alt="FloodGuard" className="nav-logo" />
+             </Link>   
             </div>
             <div className={`navbar-links ${isMenuOpen ? 'active' : ''}`}>
-                <Link to="/" onClick={toggleMenu}>Home</Link>
-                <Link to="/weather" onClick={toggleMenu}>Weather</Link>
-                <Link to="/predictions" onClick={toggleMenu}>Predictions</Link>
-                <Link to="/donate" onClick={toggleMenu}>Donate</Link>
+                <NavLink to="/" end onClick={toggleMenu}>Home</NavLink>
+                <NavLink to="/weather" onClick={toggleMenu}>Weather</NavLink>
+                <NavLink to="/predictions" onClick={toggleMenu}>Predictions</NavLink>
+                <NavLink to="/donate" onClick={toggleMenu}>Donate</NavLink>
             </div>
             <div className="navbar-auth">
                 <Link to="/login">Login</Link>

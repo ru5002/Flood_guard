@@ -129,32 +129,32 @@ export default function GamapahaWeatherMap() {
                 position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
                 onCloseClick={() => setSelectedLocation(null)}
             >
-                <div style={{ padding: "10px", textAlign: "center", minWidth: "150px" }}>
-                    <h3 style={{ margin: "0 0 8px 0", color: "#333", borderBottom: '1px solid #eee', paddingBottom: '5px' }}>{selectedLocation.name}</h3>
+                <div style={{ padding: "12px 14px", textAlign: "center", minWidth: "160px", fontFamily: "'Inter', system-ui, sans-serif" }}>
+                    <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", fontWeight: "600", color: "#111827", borderBottom: '1px solid #e5e7eb', paddingBottom: '8px', letterSpacing: '-0.01em' }}>{selectedLocation.name}</h3>
                     {selectedLocation.temp !== null ? (
                         <>
                              {/* Flex container for Icon and Temp */}
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "5px" }}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px" }}>
                                 {selectedLocation.icon && (
                                     <img 
                                         src={selectedLocation.icon} 
                                         alt={selectedLocation.condition} 
-                                        style={{ width: "50px", height: "50px" }} 
+                                        style={{ width: "48px", height: "48px" }} 
                                     />
                                 )}
-                                <span style={{ fontSize: "32px", fontWeight: "bold", color: "#000", marginLeft: "10px" }}>
+                                <span style={{ fontSize: "28px", fontWeight: "300", color: "#111827", marginLeft: "8px", letterSpacing: "-0.04em" }}>
                                     {selectedLocation.temp}°C
                                 </span>
                             </div>
-                            <div style={{ textTransform: "capitalize", fontSize: "14px", color: "#555", marginBottom: "4px" }}>
+                            <div style={{ textTransform: "capitalize", fontSize: "13px", color: "#6b7280", marginBottom: "4px" }}>
                                 {selectedLocation.description}
                             </div>
-                            <div style={{ fontSize: "13px", color: "#777" }}>
-                                Humidity: <strong>{selectedLocation.humidity}%</strong>
+                            <div style={{ fontSize: "12px", color: "#9ca3af" }}>
+                                Humidity: <strong style={{ color: "#374151" }}>{selectedLocation.humidity}%</strong>
                             </div>
                         </>
                     ) : (
-                        <div style={{padding: '10px'}}>Loading weather data...</div>
+                        <div style={{ padding: '10px', color: '#9ca3af', fontSize: '13px' }}>Loading weather data...</div>
                     )}
                 </div>
             </InfoWindow>
