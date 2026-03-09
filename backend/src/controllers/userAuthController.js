@@ -6,7 +6,7 @@ exports.registerUser = async (req, res) => {
     try {
         const { name, email, phone, password, zone } = req.body;
 
-        // Check if user already exists
+       
         let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ message: 'User already exists' });
@@ -18,16 +18,16 @@ exports.registerUser = async (req, res) => {
             email,
             phone,
             password,
-            zone: zone || 'Default Zone', // Default zone if not provided, though ideally should be selected
+            zone: zone || 'Default Zone', 
             isActive: true,
             alertsEnabled: true
         });
 
-        // Hash password
+     
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(password, salt);
 
-        // Save user to database
+       
         await user.save();
 
         res.status(201).json({ message: 'User registered successfully' });
