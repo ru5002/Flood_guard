@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "sms:test": "node sendSMS.js",
     "test": "jest --runInBand --verbose --forceExit",
     "test:watch": "jest --runInBand --verbose --watch",
     "train:model": "..\\.venv\\Scripts\\python.exe ..\\ml\\train.py",

@@ -47,30 +47,30 @@ const features = [
         IconComponent: MonitoringIcon,
         tag: 'Live Data',
         title: 'Real-Time Monitoring',
-        desc: 'Continuous water level tracking from multiple sensor points across all Gampaha District zones.',
+        desc: 'Live weather and rainfall-related updates are shown for selected flood-prone locations in Gampaha District.',
         dark: true,
     },
     {
         IconComponent: AiIcon,
-        tag: 'Deep Learning',
-        title: 'AI-Powered Predictions',
-        desc: 'LSTM neural networks forecast flood probabilities up to 12 hours ahead with high accuracy.',
+        tag: 'Flood Model',
+        title: 'Flood Risk Predictions',
+        desc: 'FloodGuard uses weather data and a trained machine-learning model to estimate risk levels for selected areas.',
         dark: false,
     },
     {
         IconComponent: SmsIcon,
-        tag: 'Instant Reach',
+        tag: 'SMS Alerts',
         title: 'SMS Alert Dispatch',
-        desc: 'Targeted SMS warnings reach registered residents within 2 minutes of risk authorisation.',
+        desc: 'When risk becomes high, registered users with phone numbers can receive warning messages through Twilio.',
         dark: false,
     },
 ];
 
 const stats = [
-    { value: '6–12h', label: 'Forecast Lead Time' },
-    { value: '4',     label: 'Districts Covered' },
-    { value: '24/7',  label: 'Live Monitoring' },
-    { value: '90%+',  label: 'Model Accuracy Target' },
+    { value: '10',    label: 'Areas Monitored' },
+    { value: '1',     label: 'District Focus' },
+    { value: 'Live',  label: 'Weather Data Checks' },
+    { value: '74.5%', label: 'Trained Model Accuracy' },
 ];
 
 const Home = () => {
@@ -131,8 +131,7 @@ const Home = () => {
                             </h1>
 
                             <p className="hero-desc">
-                                AI-powered flood prediction with 6–12 hour lead time for Gampaha District.
-                                Protecting communities before floodwaters rise.
+                                Flood risk prediction for selected locations in Gampaha District, supported by live weather data and SMS alerts.
                             </p>
 
                             <div className="hero-actions">
@@ -152,7 +151,7 @@ const Home = () => {
                                     ))}
                                 </div>
                                 <span className="social-text">
-                                    <strong>5,000+</strong> registered residents &nbsp;·&nbsp; 4 Districts protected
+                                    <strong>FloodGuard</strong> student project &nbsp;·&nbsp; Gampaha District focus
                                 </span>
                             </div>
                         </div>
@@ -190,7 +189,7 @@ const Home = () => {
                                 {/* Accuracy badge */}
                                 <div className="accuracy-badge">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a6b5a" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    90%+ Model Accuracy
+                                    Model trained for project use
                                 </div>
                             </div>
                         </div>
