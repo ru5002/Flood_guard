@@ -1,122 +1,124 @@
 /* ─── Predictions Page ──────────────────────────────────────── */
 .predictions-container {
   display: flex;
-  height: calc(100vh - 64px);
+  height: calc(100vh - 110px);
   overflow: hidden;
-  background: var(--color-surface);
+  background: #f7f6f3;
   width: 100vw;
 }
 
 /* ─── List panel ────────────────────────────────────────────── */
 .predictions-list-section {
-  flex: 0 0 380px;
+  flex: 0 0 400px;
   min-width: 320px;
-  max-width: 480px;
+  max-width: 460px;
   height: 100%;
   overflow-y: auto;
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background: #ffffff;
+  border-right: 1px solid #e4e3df;
   display: flex;
   flex-direction: column;
   z-index: 10;
-  /* custom scrollbar */
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+  scrollbar-color: #e4e3df transparent;
 }
-.predictions-list-section::-webkit-scrollbar { width: 6px; }
+.predictions-list-section::-webkit-scrollbar { width: 5px; }
 .predictions-list-section::-webkit-scrollbar-track { background: transparent; }
-.predictions-list-section::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+.predictions-list-section::-webkit-scrollbar-thumb { background: #e4e3df; border-radius: 4px; }
 
 /* ─── Panel header ─────────────────────────────────────────── */
 .predictions-header {
-  padding: var(--sp-6) var(--sp-6) var(--sp-5);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  padding: 1.75rem 1.5rem 1.25rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e4e3df;
   position: sticky;
   top: 0;
   z-index: 20;
 }
 
 .predictions-header h2 {
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--sp-3);
-  letter-spacing: -0.025em;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #111111;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.03em;
 }
 
 .date-badge {
   display: inline-flex;
   align-items: center;
-  background: var(--color-accent-light);
-  color: var(--color-text-secondary);
-  padding: var(--sp-1) var(--sp-3);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  font-weight: 500;
+  background: #f0efeb;
+  color: #666660;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  border: 1px solid var(--color-border);
+  border: 1px solid #e4e3df;
 }
 
 /* ─── District list ─────────────────────────────────────────── */
 .districts-list {
-  padding: var(--sp-5) var(--sp-5);
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: 0.75rem;
   flex: 1;
 }
 
 /* ─── Prediction card ───────────────────────────────────────── */
 .prediction-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-4) var(--sp-5);
+  background: #ffffff;
+  border: 1px solid #e4e3df;
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 .prediction-card:hover {
-  border-color: var(--color-border-hover);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  border-color: #b0afa8;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
 }
 
 .prediction-info h3 {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 var(--sp-1);
-  letter-spacing: -0.01em;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.02em;
 }
 
 .weather-status {
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
+  color: #666660;
+  font-size: 0.825rem;
+  font-weight: 500;
 }
 
 .prediction-meta {
-  margin-top: var(--sp-2);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  color: #aaa;
+  font-weight: 500;
 }
 
 /* ─── Risk badge ─────────────────────────────────────────────── */
 .risk-badge {
-  padding: var(--sp-1) var(--sp-4);
-  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
   color: #fff;
-  font-weight: 600;
-  font-size: var(--text-xs);
+  font-weight: 700;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  min-width: 80px;
+  letter-spacing: 0.07em;
+  min-width: 72px;
   text-align: center;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ─── Map panel ──────────────────────────────────────────────── */
@@ -124,7 +126,7 @@
   flex: 1;
   height: 100%;
   position: relative;
-  background: var(--color-bg);
+  background: #f7f6f3;
   overflow: hidden;
 }
 
@@ -133,7 +135,7 @@
   .predictions-container {
     flex-direction: column-reverse;
     height: auto;
-    min-height: calc(100vh - 64px);
+    min-height: calc(100vh - 110px);
     overflow: visible;
   }
   .predictions-list-section {
@@ -145,10 +147,9 @@
     box-shadow: none;
   }
   .predictions-image-section {
-    height: 55vh;
-    min-height: 360px;
+    height: 52vh;
+    min-height: 340px;
     flex: none;
     width: 100%;
   }
 }
-

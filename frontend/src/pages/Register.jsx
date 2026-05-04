@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import '../styles/auth.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -113,6 +114,7 @@ const Register = () => {
                     <div className="placeholder-image"></div>
                 </div>
             </div>
+            <Footer />
         </div>
     );
 };

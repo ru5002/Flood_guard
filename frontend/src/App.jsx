@@ -11,6 +11,7 @@ import Donate from "./pages/Donate";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
+import AlertsManagement from "./pages/admin/AlertsManagement";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/alerts" element={<AlertsManagement />} />
       </Routes>
     </BrowserRouter>
   );

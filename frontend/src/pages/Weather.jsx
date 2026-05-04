@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import axios from 'axios';
 import '../styles/weather.css';
 
@@ -183,6 +184,7 @@ const Weather = () => {
                      <p>No cities found matching "{searchTerm}"</p>
                 )}
             </div>
+            <Footer />
         </div>
     );
 };

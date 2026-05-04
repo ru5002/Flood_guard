@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import '../styles/auth.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -125,6 +126,7 @@ const Login = () => {
                     <div className="auth-image-overlay"></div>
                 </div>
             </div>
+            <Footer />
         </div>
     );
 };

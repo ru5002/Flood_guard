@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Home } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, Home } from 'lucide-react';
 import '../../styles/admin.css';
 
 const UserManagement = () => {
@@ -135,6 +135,10 @@ const UserManagement = () => {
                     <NavLink to="/admin/users" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
                         <Users size={18} />
                         Users
+                    </NavLink>
+                    <NavLink to="/admin/alerts" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <Bell size={18} />
+                        SMS Alerts
                     </NavLink>
                     <Link to="/" className="admin-nav-link">
                         <Home size={18} />
