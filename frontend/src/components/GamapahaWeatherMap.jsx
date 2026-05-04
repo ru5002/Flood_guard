@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import axios from "axios";
 
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
+// Fix for missing marker icons in react-leaflet
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
-// Center focused on Gampaha District
-const gampahaCenter = {
-  lat: 7.0917,
-  lng: 79.9997,
-};
+const DefaultIcon = L.icon({
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+const gampahaCenter = [7.0917, 79.9997];
 
 const gampahaAreas = [
   { name: "Gampaha", lat: 7.091, lng: 79.993 },
@@ -33,14 +40,13 @@ const MOCK_MAP_DATA = {
     "Kelaniya": { temp: 30, condition: "Clear", description: "clear sky", humidity: 68, icon: "01d" }
 };
 
-
 export default function GamapahaWeatherMap() {
   const [locations, setLocations] = useState(
     gampahaAreas.map(area => ({ ...area, temp: null, condition: null, description: null, humidity: null, icon: null }))
   );
-  const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchWeather = async () => {
       let apiKey = import.meta.env.VITE_OPENWEATHER_KEY;
       if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
@@ -83,84 +89,59 @@ export default function GamapahaWeatherMap() {
           }
         })
       );
-      setLocations(updatedLocations);
+      if (isMounted) setLocations(updatedLocations);
     };
 
     fetchWeather();
+    return () => { isMounted = false; };
   }, []);
 
   return (
-    <LoadScript googleMapsApiKey="AIzaSyBdleQbPDLVo0yDo80U3p-pFu8-BP_7Tjc">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
+    <div style={{ width: "100%", height: "100%", position: "relative", zIndex: 1 }}>
+      <MapContainer
         center={gampahaCenter}
         zoom={11}
-        options={{
-          disableDefaultUI: true,
-          styles: [
-            {
-              featureType: "all",
-              elementType: "geometry",
-              stylers: [{ color: "#ffffff" }],
-            },
-            {
-              featureType: "water",
-              elementType: "geometry.fill",
-              stylers: [{ color: "#cce0ff" }],
-            },
-            {
-              elementType: "labels.text.fill",
-              stylers: [{ color: "#000000" }],
-            },
-          ],
-        }}
+        style={{ width: "100%", height: "100%", minHeight: "500px" }}
       >
-        {locations.map((loc, index) => (
-            <Marker
-                key={index}
-                position={{ lat: loc.lat, lng: loc.lng }}
-                onClick={() => setSelectedLocation(loc)}
-                title={loc.name}
-            />
-        ))}
+        <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
 
-        {selectedLocation && (
-            <InfoWindow
-                position={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
-                onCloseClick={() => setSelectedLocation(null)}
-            >
-                <div style={{ padding: "12px 14px", textAlign: "center", minWidth: "160px", fontFamily: "'Inter', system-ui, sans-serif" }}>
-                    <h3 style={{ margin: "0 0 10px 0", fontSize: "14px", fontWeight: "600", color: "#111827", borderBottom: '1px solid #e5e7eb', paddingBottom: '8px', letterSpacing: '-0.01em' }}>{selectedLocation.name}</h3>
-                    {selectedLocation.temp !== null ? (
-                        <>
-                             {/* Flex container for Icon and Temp */}
-                            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px" }}>
-                                {selectedLocation.icon && (
-                                    <img 
-                                        src={selectedLocation.icon} 
-                                        alt={selectedLocation.condition} 
-                                        style={{ width: "48px", height: "48px" }} 
-                                    />
-                                )}
-                                <span style={{ fontSize: "28px", fontWeight: "300", color: "#111827", marginLeft: "8px", letterSpacing: "-0.04em" }}>
-                                    {selectedLocation.temp}°C
-                                </span>
-                            </div>
-                            <div style={{ textTransform: "capitalize", fontSize: "13px", color: "#6b7280", marginBottom: "4px" }}>
-                                {selectedLocation.description}
-                            </div>
-                            <div style={{ fontSize: "12px", color: "#9ca3af" }}>
-                                Humidity: <strong style={{ color: "#374151" }}>{selectedLocation.humidity}%</strong>
-                            </div>
-                        </>
-                    ) : (
-                        <div style={{ padding: '10px', color: '#9ca3af', fontSize: '13px' }}>Loading weather data...</div>
-                    )}
-                </div>
-            </InfoWindow>
-        )}
-      </GoogleMap>
-    </LoadScript>
+        {locations.map((loc, index) => (
+            <Marker key={index} position={[loc.lat, loc.lng]}>
+                <Popup>
+                    <div style={{ textAlign: "center", minWidth: "120px", fontFamily: "inherit" }}>
+                        <h3 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#111" }}>{loc.name}</h3>
+                        {loc.temp !== null ? (
+                            <>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "6px" }}>
+                                    {loc.icon && (
+                                        <img 
+                                            src={loc.icon} 
+                                            alt={loc.condition} 
+                                            style={{ width: "40px", height: "40px" }} 
+                                        />
+                                    )}
+                                    <span style={{ fontSize: "24px", fontWeight: "300", color: "#111", marginLeft: "4px" }}>
+                                        {loc.temp}°C
+                                    </span>
+                                </div>
+                                <div style={{ textTransform: "capitalize", fontSize: "12px", color: "#666", marginBottom: "2px" }}>
+                                    {loc.description}
+                                </div>
+                                <div style={{ fontSize: "12px", color: "#666" }}>
+                                    <strong>Humidity:</strong> {loc.humidity}%
+                                </div>
+                            </>
+                        ) : (
+                            <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Loading...</p>
+                        )}
+                    </div>
+                </Popup>
+            </Marker>
+        ))}
+      </MapContainer>
+    </div>
   );
 }
-

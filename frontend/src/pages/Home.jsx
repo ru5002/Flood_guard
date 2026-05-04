@@ -73,10 +73,31 @@ const stats = [
 const Home = () => {
     const { temp, condition, humidity, wind, location, floodRisk, loading } = useLiveStats();
 
+    const getRiskMessage = (risk) => {
+        switch (risk) {
+            case 'Critical': return '⚠️ EXTREME DANGER! Move to higher ground immediately.';
+            case 'High': return '🚫 High Risk! Prepare for possible evacuation.';
+            case 'Moderate': return '🟠 Moderate Risk. Stay alert for river level changes.';
+            case 'Low': return '✅ Low Risk. Conditions are stable in your area.';
+            default: return '✅ No flood risk detected in your current location.';
+        }
+    };
+
     return (
         <div className="page-wrapper">
             <Navbar />
             <main className="home-main">
+                {/* ── Location Risk Alert ── */}
+                {!loading && (
+                    <div className={`location-risk-banner ${floodRisk?.toLowerCase()}`}>
+                        <div className="banner-content">
+                            <span className="banner-icon">📍</span>
+                            <span className="banner-text">
+                                <strong>Your Location ({location}):</strong> {getRiskMessage(floodRisk)}
+                            </span>
+                        </div>
+                    </div>
+                )}
 
                 {/* ── Hero ── */}
                 <section className="hero-section">
