@@ -14,16 +14,12 @@ const RISK_COLORS = {
 };
 
 const FALLBACK = [
-    { _id: '1',  location: 'Gampaha Town',  prediction: 'Heavy Rain Expected',        riskLevel: 'High',     rainfallMm: 45, floodProbability: 72, confidence: 80 },
-    { _id: '2',  location: 'Negombo',        prediction: 'Light Showers',               riskLevel: 'Low',      rainfallMm: 12, floodProbability: 18, confidence: 85 },
-    { _id: '3',  location: 'Wattala',        prediction: 'Clear Sky',                   riskLevel: 'None',     rainfallMm: 0,  floodProbability: 3,  confidence: 92 },
-    { _id: '4',  location: 'Ja-Ela',         prediction: 'Overcast with Moderate Rain', riskLevel: 'Moderate', rainfallMm: 25, floodProbability: 40, confidence: 78 },
-    { _id: '5',  location: 'Minuwangoda',    prediction: 'Thunderstorms',               riskLevel: 'High',     rainfallMm: 50, floodProbability: 80, confidence: 76 },
-    { _id: '6',  location: 'Katunayake',     prediction: 'Light Rain',                  riskLevel: 'Low',      rainfallMm: 8,  floodProbability: 12, confidence: 88 },
-    { _id: '7',  location: 'Kelaniya',       prediction: 'Partly Cloudy',               riskLevel: 'None',     rainfallMm: 2,  floodProbability: 8,  confidence: 90 },
-    { _id: '8',  location: 'Ragama',         prediction: 'Heavy Rain',                  riskLevel: 'High',     rainfallMm: 40, floodProbability: 65, confidence: 77 },
-    { _id: '9',  location: 'Mirigama',       prediction: 'Clear Sky',                   riskLevel: 'None',     rainfallMm: 0,  floodProbability: 2,  confidence: 95 },
-    { _id: '10', location: 'Divulapitiya',   prediction: 'Light Showers',               riskLevel: 'Low',      rainfallMm: 10, floodProbability: 15, confidence: 83 }
+    { _id: '1',  location: 'Gampaha',       predictionText: 'Heavy Rain Expected - Flood Possible', riskLevel: 'High',     waterLevel: 2.85, floodProbability: 0.72 },
+    { _id: '2',  location: 'Negombo',       predictionText: 'Light Showers',                        riskLevel: 'Low',      waterLevel: 1.15, floodProbability: 0.18 },
+    { _id: '3',  location: 'Wattala',       predictionText: 'Clear Sky',                            riskLevel: 'None',     waterLevel: 0.50, floodProbability: 0.03 },
+    { _id: '4',  location: 'Ja-Ela',        predictionText: 'Overcast with Moderate Rain',          riskLevel: 'Moderate', waterLevel: 1.55, floodProbability: 0.40 },
+    { _id: '5',  location: 'Minuwangoda',   predictionText: 'Thunderstorms - Immediate Risk',       riskLevel: 'Critical', waterLevel: 3.42, floodProbability: 0.90 },
+    { _id: '6',  location: 'Katunayake',    predictionText: 'Light Rain',                           riskLevel: 'Low',      waterLevel: 0.98, floodProbability: 0.12 }
 ];
 
 const Predictions = () => {
@@ -83,11 +79,9 @@ const Predictions = () => {
                                     ? `Updated ${new Date(generatedAt).toLocaleString()}`
                                     : new Date().toLocaleDateString()}
                             </span>
-                            {modelVersion && (
-                                <span className="date-badge" style={{ background: '#f0fdf4', color: '#15803d' }}>
-                                    {modelVersion}
-                                </span>
-                            )}
+                            <span className="date-badge" style={{ background: '#f8f4ff', color: '#6d28d9', borderColor: '#e9d5ff' }}>
+                                v2.0-lstm-14d Model
+                            </span>
                         </div>
 
                         {/* Risk summary pills */}
@@ -127,18 +121,15 @@ const Predictions = () => {
                                     <div className="prediction-info">
                                         <h3>{item.location}</h3>
                                         <div className="prediction-stat">
-                                            <span className="weather-status">{item.prediction}</span>
+                                            <span className="weather-status">{item.predictionText || item.prediction}</span>
                                         </div>
                                         <div className="prediction-meta">
-                                            <span>Rainfall: {item.rainfallMm ?? 0} mm</span>
+                                            {item.waterLevel != null && (
+                                                <span>Level: {item.waterLevel.toFixed(2)} m</span>
+                                            )}
                                             {item.floodProbability != null && (
                                                 <span style={{ marginLeft: '10px' }}>
-                                                    Flood prob: {item.floodProbability}%
-                                                </span>
-                                            )}
-                                            {item.confidence != null && (
-                                                <span style={{ marginLeft: '10px', opacity: 0.75 }}>
-                                                    Confidence: {item.confidence}%
+                                                    Flood Prob: {(item.floodProbability * 100).toFixed(0)}%
                                                 </span>
                                             )}
                                         </div>
@@ -157,7 +148,7 @@ const Predictions = () => {
 
                 {/* ── Map panel ── */}
                 <div className="predictions-image-section">
-                    <GamapahaWeatherMap />
+                    <GamapahaWeatherMap predictions={predictions} />
                 </div>
             </div>
         </div>

@@ -1,6 +1,116 @@
 const Prediction = require("../models/Prediction");
 const User = require("../models/User");
+const WeatherData = require("../models/WeatherData");
+const RiverLevel = require("../models/RiverLevel");
 const { sendSMS } = require("../services/smsService");
+const { spawn } = require('child_process');
+const path = require('path');
+const axios = require('axios');
+
+/**
+ * GET /api/predictions/live
+ * Fetches current weather + river level, saves reading, and returns LSTM prediction.
+ */
+exports.generateLivePrediction = async (req, res) => {
+  try {
+    const API_KEY = process.env.OPENWEATHER_API_KEY;
+    const CITY = "Gampaha";
+    const LOCATION = "Dunamale"; // Key station for the LSTM model
+    let currentRainfall = 0, currentHumidity = 0, currentWindSpeed = 0, currentWaterLevel = 1.5;
+
+    // 1. Fetch Live Weather if API key is provided
+    if (API_KEY) {
+      try {
+        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${CITY}&appid=${API_KEY}&units=metric`;
+        const weatherResponse = await axios.get(weatherUrl);
+        const { main, wind, rain } = weatherResponse.data;
+        currentRainfall = rain ? (rain['1h'] || rain['3h'] || 0) : 0;
+        currentHumidity = main.humidity;
+        currentWindSpeed = (wind.speed * 3.6); // convert m/s to km/h
+      } catch (err) {
+        console.warn("Weather API Fetch failed, using defaults:", err.message);
+      }
+    }
+
+    // 2. Fetch Latest River Level from DB
+    const lastRiver = await RiverLevel.findOne({ stationName: LOCATION }).sort({ recordedAt: -1 });
+    if (lastRiver) currentWaterLevel = lastRiver.levelMeters;
+
+    // 3. Save as current reading
+    const newWeather = new WeatherData({
+        location: LOCATION,
+        rainfall: currentRainfall,
+        humidity: currentHumidity,
+        windSpeed: currentWindSpeed,
+        recordedAt: new Date(),
+        source: 'scheduled_fetch'
+    });
+    await newWeather.save();
+
+    // 4. Retrieve rolling 7 days of history (Weather matched with River Levels)
+    // For simplicity, we fetch 7 latest Weather entries and assume corresponding river levels stored/mocked
+    const historyWeather = await WeatherData.find({ location: LOCATION }).sort({ recordedAt: -1 }).limit(7).lean();
+    
+    if (historyWeather.length < 7) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Not enough historical data to generate LSTM sequence (7 days required)." 
+      });
+    }
+
+    const payload = historyWeather.reverse().map(hw => ({
+      date: hw.recordedAt.toISOString(),
+      rainfall: hw.rainfall,
+      humidity: hw.humidity,
+      wind_speed: hw.windSpeed,
+      water_level: currentWaterLevel // Use current for mockup if per-day history is missing
+    }));
+
+    // 5. Invoke Python LSTM
+    const pythonPath = process.env.PYTHON_PATH || 'python';
+    const scriptPath = path.resolve(__dirname, '../../../ml/predict_live.py');
+    
+    const pyProcess = spawn(pythonPath, [scriptPath]);
+    let outputData = "", errorData = "";
+
+    pyProcess.stdin.write(JSON.stringify(payload));
+    pyProcess.stdin.end();
+
+    pyProcess.stdout.on('data', (d) => outputData += d.toString());
+    pyProcess.stderr.on('data', (d) => errorData += d.toString());
+
+    pyProcess.on('close', async (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ success: false, error: "ML Service Error", details: errorData });
+      }
+
+      const result = JSON.parse(outputData);
+
+      // 6. Save prediction to DB
+      const newPrediction = new Prediction({
+        location: LOCATION,
+        riskLevel: result.prediction,
+        confidence: result.confidence,
+        predictionDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Target for tomorrow
+        source: "lstm_live_pipeline"
+      });
+      await newPrediction.save();
+
+      // 7. Trigger Alerts if needed
+      if (["High", "Critical"].includes(result.prediction)) {
+        const users = await User.find({ role: 'user', "notifications.sms": true });
+        users.forEach(u => {
+            if (u.phone) sendSMS(u.phone, `FLOOD ALERT: ${result.prediction} risk predicted for Gampaha tomorrow. Stay alert.`);
+        });
+      }
+
+      res.json({ success: true, reading: newWeather, prediction: result });
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 
 /**
  * GET /api/predictions/latest

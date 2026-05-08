@@ -40,7 +40,7 @@ const MOCK_MAP_DATA = {
     "Kelaniya": { temp: 30, condition: "Clear", description: "clear sky", humidity: 68, icon: "01d" }
 };
 
-export default function GamapahaWeatherMap() {
+export default function GamapahaWeatherMap({ predictions = [] }) {
   const [locations, setLocations] = useState(
     gampahaAreas.map(area => ({ ...area, temp: null, condition: null, description: null, humidity: null, icon: null }))
   );
@@ -108,11 +108,38 @@ export default function GamapahaWeatherMap() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {locations.map((loc, index) => (
+        {locations.map((loc, index) => {
+            const pred = predictions.find(p => p.location === loc.name);
+            const riskColors = {
+                Critical: '#7c3aed',
+                High:     '#dc2626',
+                Moderate: '#ea580c',
+                Low:      '#ca8a04',
+                None:     '#16a34a'
+            };
+            const riskColor = pred ? (riskColors[pred.riskLevel] || riskColors.None) : '#999';
+
+            return (
             <Marker key={index} position={[loc.lat, loc.lng]}>
                 <Popup>
-                    <div style={{ textAlign: "center", minWidth: "120px", fontFamily: "inherit" }}>
-                        <h3 style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "600", color: "#111" }}>{loc.name}</h3>
+                    <div style={{ textAlign: "center", minWidth: "140px", fontFamily: "inherit" }}>
+                        <h3 style={{ margin: "0 0 8px 0", fontSize: "15px", fontWeight: "700", color: "#111" }}>{loc.name}</h3>
+                        
+                        {pred && (
+                            <div style={{ 
+                                background: riskColor, 
+                                color: "white", 
+                                borderRadius: "4px", 
+                                padding: "4px", 
+                                marginBottom: "8px",
+                                fontSize: "12px",
+                                fontWeight: "bold",
+                                textTransform: "uppercase"
+                            }}>
+                                {pred.riskLevel} RISK
+                            </div>
+                        )}
+
                         {loc.temp !== null ? (
                             <>
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "6px" }}>
@@ -120,27 +147,30 @@ export default function GamapahaWeatherMap() {
                                         <img 
                                             src={loc.icon} 
                                             alt={loc.condition} 
-                                            style={{ width: "40px", height: "40px" }} 
+                                            style={{ width: "32px", height: "32px" }} 
                                         />
                                     )}
-                                    <span style={{ fontSize: "24px", fontWeight: "300", color: "#111", marginLeft: "4px" }}>
+                                    <span style={{ fontSize: "20px", fontWeight: "500", color: "#111", marginLeft: "4px" }}>
                                         {loc.temp}°C
                                     </span>
                                 </div>
-                                <div style={{ textTransform: "capitalize", fontSize: "12px", color: "#666", marginBottom: "2px" }}>
+                                <div style={{ textTransform: "capitalize", fontSize: "12px", color: "#666", marginBottom: "4px" }}>
                                     {loc.description}
                                 </div>
-                                <div style={{ fontSize: "12px", color: "#666" }}>
-                                    <strong>Humidity:</strong> {loc.humidity}%
-                                </div>
+                                {pred?.waterLevel != null && (
+                                    <div style={{ fontSize: "12px", color: "#333", fontWeight: "600", marginTop: "4px" }}>
+                                        Water Level: {pred.waterLevel.toFixed(2)}m
+                                    </div>
+                                )}
                             </>
                         ) : (
-                            <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Loading...</p>
+                            <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>Loading weather...</p>
                         )}
                     </div>
                 </Popup>
             </Marker>
-        ))}
+            );
+        })}
       </MapContainer>
     </div>
   );
