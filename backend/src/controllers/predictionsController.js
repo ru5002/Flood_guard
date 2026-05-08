@@ -48,28 +48,36 @@ exports.generateLivePrediction = async (req, res) => {
     await newWeather.save();
 
     // 4. Retrieve rolling 7 days of history (Weather matched with River Levels)
-    // For simplicity, we fetch 7 latest Weather entries and assume corresponding river levels stored/mocked
-    const historyWeather = await WeatherData.find({ location: LOCATION }).sort({ recordedAt: -1 }).limit(7).lean();
+    const historyWeather = await WeatherData.find({ location: LOCATION }).sort({ recordedAt: -1 }).limit(10).lean();
     
+    console.log(`Live Prediction: Found ${historyWeather.length} records for ${LOCATION}`);
+    // console.log("Records:", historyWeather.map(h => h.recordedAt));
+
     if (historyWeather.length < 7) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Not enough historical data to generate LSTM sequence (7 days required)." 
+      return res.status(200).json({ 
+        success: false,
+        status: "insufficient_data",
+        message: "At least 7 days of weather and river-level readings are required for LSTM prediction.",
+        availableRecords: historyWeather.length
       });
     }
 
-    const payload = historyWeather.reverse().map(hw => ({
+    // Take exactly latest 7 and reverse for chronological order (oldest -> newest)
+    const payloadData = historyWeather.slice(0, 7).reverse();
+
+    const payload = payloadData.map(hw => ({
       date: hw.recordedAt.toISOString(),
       rainfall: hw.rainfall,
       humidity: hw.humidity,
       wind_speed: hw.windSpeed,
-      water_level: currentWaterLevel // Use current for mockup if per-day history is missing
+      water_level: hw.waterLevel || currentWaterLevel // Prefer per-day level if available
     }));
 
     // 5. Invoke Python LSTM
     const pythonPath = process.env.PYTHON_PATH || 'python';
     const scriptPath = path.resolve(__dirname, '../../../ml/predict_live.py');
     
+    console.log("Invoking ML Service with 7-day sequence...");
     const pyProcess = spawn(pythonPath, [scriptPath]);
     let outputData = "", errorData = "";
 
@@ -81,18 +89,28 @@ exports.generateLivePrediction = async (req, res) => {
 
     pyProcess.on('close', async (code) => {
       if (code !== 0) {
+        console.error("Python process exited with code:", code, "Errors:", errorData);
         return res.status(500).json({ success: false, error: "ML Service Error", details: errorData });
       }
 
-      const result = JSON.parse(outputData);
+      console.log("Python output raw:", outputData);
+      let result;
+      try {
+        result = JSON.parse(outputData);
+      } catch (parseErr) {
+        console.error("JSON parse error:", parseErr, "Raw output:", outputData);
+        return res.status(500).json({ success: false, error: "Invalid JSON from ML Service" });
+      }
 
       // 6. Save prediction to DB
       const newPrediction = new Prediction({
         location: LOCATION,
+        prediction: `LSTM prediction: ${result.prediction}`,
         riskLevel: result.prediction,
-        confidence: result.confidence,
-        predictionDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Target for tomorrow
-        source: "lstm_live_pipeline"
+        confidence: (result.confidence || 0) * 100, // Matching schema 0-100%
+        generatedAt: new Date(),
+        validUntil: new Date(Date.now() + 24 * 60 * 60 * 1000), // Target for tomorrow
+        source: "ml_model"
       });
       await newPrediction.save();
 

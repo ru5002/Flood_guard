@@ -67,9 +67,10 @@ export default function useLiveStats() {
         let apiKey = import.meta.env.VITE_OPENWEATHER_KEY;
         if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') apiKey = OWM_KEY;
 
-        const [weatherResult, predRes] = await Promise.allSettled([
+        const [weatherResult, predRes, liveRes] = await Promise.allSettled([
           fetchWeather(lat, lon, apiKey),
           axios.get('/api/predictions/latest'),
+          axios.get('/api/predictions/live')
         ]);
 
         if (cancelled) return;
@@ -85,20 +86,39 @@ export default function useLiveStats() {
           });
         }
 
+        // Live Predictions (Override for Map/Home)
+        let liveRisk = null;
+        if (liveRes.status === 'fulfilled' && liveRes.value && liveRes.value.data && liveRes.value.data.success) {
+            liveRisk = liveRes.value.data.prediction?.prediction;
+        }
+
         // Predictions
         if (predRes.status === 'fulfilled') {
           const preds = predRes.value.data?.predictions || [];
           if (preds.length) {
             const riskOrder = { Critical: 4, High: 3, Moderate: 2, Low: 1, None: 0 };
-            const sorted = [...preds].sort(
-              (a, b) => (riskOrder[b.riskLevel] || 0) - (riskOrder[a.riskLevel] || 0)
-            );
-            const top = sorted[0];
-            update.floodRisk = top.riskLevel || 'Low';
-            update.riverStatus = top.riverRisk || 'Normal';
-            if (update.riverStatus === 'None') update.riverStatus = 'Normal';
+            
+            // If live API is active and we are near Gampaha, incorporate it
+            if (liveRisk && update.location === 'Gampaha') {
+                update.floodRisk = liveRisk;
+                update.riverStatus = 'Active';
+            } else {
+                const sorted = [...preds].sort(
+                  (a, b) => (riskOrder[b.riskLevel] || 0) - (riskOrder[a.riskLevel] || 0)
+                );
+                const top = sorted[0];
+                update.floodRisk = top.riskLevel || 'Low';
+                update.riverStatus = top.riverRisk || 'Normal';
+                if (update.riverStatus === 'None') update.riverStatus = 'Normal';
+            }
           }
+        } else if (liveRisk && update.location === 'Gampaha') {
+            update.floodRisk = liveRisk;
+        } else if (predRes.status === 'rejected') {
+            // Fallback state if API is completely unreachable
+            update.floodRisk = 'High';
         }
+
 
         setStats(s => ({ ...s, ...update }));
       } catch (err) {
