@@ -83,6 +83,62 @@
   color: #0f172a;
 }
 
+.location-alert-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-left: 6px solid #22c55e;
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 24px;
+  padding: 18px 20px;
+}
+
+.location-alert-card.high {
+  background: #fff5f5;
+  border-color: #ef4444;
+}
+
+.location-alert-card.moderate {
+  background: #fff7ed;
+  border-color: #f97316;
+}
+
+.location-alert-card.clear {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}
+
+.location-alert-label {
+  color: #64748b;
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.location-alert-card h3 {
+  color: #111827;
+  font-size: 18px;
+  margin: 0;
+}
+
+.location-alert-card p {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+
+.location-alert-sms-status {
+  color: #64748b;
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
 /* Live Banner */
 .live-banner {
   display: flex;

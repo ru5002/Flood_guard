@@ -40,6 +40,10 @@ const weatherDataSchema = new mongoose.Schema({
         type: Number,       // mm
         default: 0
     },
+    waterLevel: {
+        type: Number,       // metres at related river station, when captured with weather
+        default: null
+    },
     condition: {
         type: String,       // e.g. "Heavy Rain", "Clear Sky"
         default: 'Unknown'

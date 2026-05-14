@@ -50,7 +50,8 @@
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 0.625rem var(--sp-4);
   background: var(--color-surface);
@@ -60,15 +61,23 @@
   color: var(--color-text-primary);
   outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
+  font-family: inherit;
+}
+
+.form-group textarea {
+  min-height: 86px;
+  resize: vertical;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: var(--color-border-focus);
   box-shadow: 0 0 0 3px rgba(17,24,39,.07);
 }
 
-.form-group input::placeholder {
+.form-group input::placeholder,
+.form-group textarea::placeholder {
   color: var(--color-text-muted);
 }
 

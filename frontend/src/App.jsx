@@ -8,10 +8,12 @@ import Predictions from "./pages/Predictions";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Donate from "./pages/Donate";
+import Profile from "./pages/Profile";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import AlertsManagement from "./pages/admin/AlertsManagement";
+import FAQChatbot from "./components/FAQChatbot";
 
 function App() {
   return (
@@ -24,13 +26,15 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/donate" element={<Donate />} />
-        
+        <Route path="/profile" element={<Profile />} />
+
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/admin/alerts" element={<AlertsManagement />} />
       </Routes>
+      <FAQChatbot />
     </BrowserRouter>
   );
 }

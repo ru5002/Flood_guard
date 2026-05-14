@@ -1,0 +1,595 @@
+
+
+--- PAGE 1 ---
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+PUSL3190 Computing Project 
+ 
+ 
+ 
+ 
+ 
+ 
+Project Proposal 
+ 
+ 
+ 
+ 
+ 
+FloodGuard: Deep Learning-Based Flood Prediction and Early 
+Warning System for Gampaha, Sri Lanka 
+ 
+ 
+ 
+ 
+Supervisor: Hirushi Dilpriya 
+ 
+ 
+Name: Weherawatta Kankanamalage Hirushi Nethmini 
+Plymouth Index Number: 10953009 
+Degree Program: BSc (Hons) Software Engineering 
+
+
+
+--- PAGE 2 ---
+ 
+ 
+2 
+ 
+Contents 
+ 
+1. Problem Statement....................................................................................................... 3 
+2. Project Description ...................................................................................................... 4 
+2.1 Background of the Project ................................................................................................... 4 
+2.2 Project Objectives ................................................................................................................ 4 
+2.3 Scope of the Project ............................................................................................................. 5 
+2.4 Expected Outcomes ............................................................................................................. 6 
+2.5 Project Keywords ................................................................................................................. 6 
+3. Research Gap ............................................................................................................... 7 
+4. Requirements Analysis ................................................................................................ 8 
+4.1 Requirements Collection ...................................................................................................... 8 
+4.2 Functional Requirements ..................................................................................................... 8 
+4.3 Non Functional Requirements ............................................................................................. 8 
+4.4 User Requirements ............................................................................................................... 8 
+4.5 Tools and Knowledge Required........................................................................................... 9 
+4.6 Technology Stack................................................................................................................. 9 
+5. Finance ........................................................................................................................ 10 
+5.1 Budget Plan ........................................................................................................................ 10 
+6. External Organizations ............................................................................................. 10 
+7. Timeline ...................................................................................................................... 11 
+8. References ................................................................................................................... 12 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 3 ---
+ 
+ 
+3 
+ 
+1. Problem Statement 
+ 
+Flooding is one of the most frequent natural disasters in Sri Lanka, especially  in low-lying 
+areas like the Gampaha District. This is a consequence of two main factors: intense 
+monsoonal rainfall and accelerated urbanization., unplanned construction, and insufficient 
+drainage infrastructure, the Aththanagalu Oya river basin, which flows through densely 
+populated areas like Ja-Ela, Gampaha, and Minuwangoda, is extremely vulnerable to sudden 
+floods. Even though these floods occur frequently, today's early warning systems are still 
+insufficient and poorly coordinated. They are designed to react to dangers as they happen, 
+rather than proactively warning people before an event occurs. 
+ 
+In Sri Lanka, traditional flood alert systems frequently rely on centralized announcements 
+from the Department of Irrigation, fixed thresholds, or human monitoring. These approaches 
+are not area-specific enough slow response times, and restricted community-level 
+distribution, particularly during periods of high rainfall when prompt decision-making is 
+crucial. Because of this, residents often receive warnings too late to take appropriate action, 
+which results in preventable property damage, displacement, and in extreme cases, fatalities. 
+ 
+Although more dynamic flood forecasting models have been made possible by global 
+advancements in artificial intelligence and remote sensing, their integration into localized 
+disaster management in Sri Lanka is still very limited. Additionally Many current systems use 
+general models that cannot handle the complex water flow of a specific river, like the 
+Aththanagalu Oya. Hence, they don't fully use past data on rainfall, river levels, and ground 
+conditions, which is needed to make very accurate predictions. 
+ 
+A flood prediction and early warning system designed especially for the Aththanagalu Oya 
+basin is desperately needed in this situation. The system should be able to predict short-term 
+flood risk with a reasonable level of accuracy by utilizing deep learning techniques such as 
+LSTM,  RNN models, historical flood datasets, and near real-time weather/rainfall inputs. In 
+order to guarantee that locals receive timely and understandable guidance, the platform must 
+also give priority to actionable community-level alerts via accessible channels like SMS, 
+WhatsApp, or mobile notifications. 
+ 
+The primary objective is to transition from a reactive approach to disaster response towards 
+proactive risk management. An intelligent, localized early warning system will enable both 
+authorities and residents to make informed decisions, reduce damage, and safeguard 
+vulnerable communities in the Gampaha District from the increasing risk of flooding. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 4 ---
+ 
+ 
+4 
+ 
+2. Project Description  
+ 
+2.1 Background of the Project 
+ 
+The Gampaha district in Sri Lanka is known to be a high-risk area for flooding. The 
+Aththanagalu Oya river basin, in particular, faces this problem repeatedly. Research has 
+confirmed why this area is vulnerable since it is very flat and low-lying, it is densely 
+populated with homes and farms, and the main waterways that should drain into the 
+Negombo Lagoon are often blocked (Chathurani et al., 2022). 
+ 
+Recently, Sri Lanka launched a national system to send disaster alerts to citizens via SMS 
+(climatefactchecks.org, 2025). While this system is good for delivering messages, it has a 
+critical gap: it cannot predict a flood at the local level before it happens. This means residents 
+in the Aththanagalu Oya basin often get warnings too late, just as the water is already rising. 
+This project will fill that prediction gap. We will use a modern and effective method known 
+as deep learning, specifically a Long Short-Term Memory (LSTM) network. This type of AI 
+model has been proven to be very effective for predicting floods in real-time, even in 
+complex river systems (Moutaouakil et al., 2025). 
+ 
+These new, early predictions can then be fed directly into Sri Lanka’s existing national SMS 
+alert system. This connects our local forecast with the national warning channel, allowing the 
+Disaster Management Centre to send life-saving alerts before the flood becomes dangerous 
+(climatefactchecks.org, 2025). This project bridges a critical gap, empowers the Gampaha 
+community, and creates a system that could eventually be used to protect other flood-prone 
+areas in the country. 
+ 
+ 
+2.2 Project Objectives 
+ 
+• Develop a localized flood risk prediction and alert platform 
+ 
+Design and implement a web based platform exclusive to Gampaha District, where citizens 
+and government authorities can monitor flood hazards and be given early warnings. 
+To train its predictive model, the system will collect and prepare environmental data such like 
+rainfall and river levels from both past records and real-time sources. The platform will 
+provide neighborhood based flood risk levels, interactive maps, and historic flood patterns for 
+awareness depending on these inputs. 
+ 
+• Implement a deep learning based forecasting model 
+ 
+The system's predictive engine will be built on a Long Short -Term Memory (LSTM) neural 
+network, rather than a general statistical model. This model will be constructed to predict short-
+term future flood risk based on temporal trends in rainfall and water level rise, with spatial 
+adjustments made using land elevation and soil absorption data. 
+If anomalies or critical flood thresholds are detected, the model will trigger alerts to the front-
+end and connected communication modules. 
+ 
+ 
+ 
+
+
+--- PAGE 5 ---
+ 
+ 
+5 
+ 
+• Send proactive SMS-based flood alerts and guidance 
+ 
+The system will have an SMS integration layer to ensure timely delivery of warning warnings 
+to inhabitants, especially those in regions with no internet. FloodGuard will deliver district 
+level alerts, safety advice, and evacuation instructions automatically through local SMS APIs.  
+ 
+• Enable real-time coordination for volunteers and donations 
+ 
+A dedicated community section will allow local government, NGOs, and volunteers to 
+coordinate disaster response efforts. 
+Features include: 
+• Donation tracking and resource request listings 
+• Volunteer registration and availability scheduling 
+• Dashboard for administrators to post verified updates 
+• A community feed for affected residents to seek help or report damage 
+Each listing will include reaction metrics such as volunteer count, and verified status to build 
+trust and transparency. 
+This module draws inspiration from successful disaster relief initiatives and seeks to digitally 
+amplify Sri Lanka’s strong culture of local solidarity in the face of crises. 
+ 
+2.3 Scope of the Project 
+ 
+Features and Functionality Covered in This Project 
+• Forecasting floods using a deep learning-based LSTM model, trained on 6 - 7 years of 
+rainfall and water level data from the Aththanagalu Oya and surrounding Gampaha 
+region. 
+• A web-based dashboard displaying current weather, flood predictions, rainfall trends 
+for public access and authority monitoring. 
+• Automated early warning system via SMS alerts using integration with local telecom 
+APIs. 
+• Admin panel for disaster response teams to: 
+▪ Send alerts manually during emergencies. 
+▪ Update risk zones. 
+▪ View system usage statistics. 
+• Data preprocessing and normalization pipelines for cleaning and formatting 
+meteorological and hydrological datasets. Community reporting features, where 
+registered NGOs or residents can share support/donation needs after a flood event. 
+ 
+Out of Scope 
+• Real-time IoT sensor integration. 
+• Integration with satellite imaging or GIS platforms. 
+• Full-scale nationwide flood prediction. 
+
+
+--- PAGE 6 ---
+ 
+ 
+6 
+ 
+ 
+2.4 Expected Outcomes 
+ 
+Upon successful completion of the project, the following outcomes are expected: 
+ 
+• A fully functional web-based platform tailored to the Gampaha District, offering 
+flood risk monitoring and early warnings. 
+ 
+• A deep learning based LSTM model capable of predicting flood events using 
+historical rainfall, river level, and land-use data. 
+ 
+• Live current weather information and real-time updates for the Aththanagalu Oya 
+basin to help residents stay informed. 
+ 
+• A reliable SMS-based alert system integrated with Sri Lankan SMS gateway 
+providers, allowing offline users to receive warnings. 
+ 
+• An admin dashboard for local authorities to view predictions, issue alerts, and manage 
+communication with residents. 
+ 
+• A community module that promotes collaboration in disaster relief, including 
+volunteer coordination and donation tracking. 
+ 
+ 
+ 
+ 
+2.5 Project Keywords 
+ 
+Flood forecasting, early warning, rainfall prediction, Aththanagalu Oya, disaster management 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 7 ---
+ 
+ 
+7 
+ 
+3. Research Gap 
+ 
+ 
+While Sri Lanka has national disaster warning systems, many existing solutions have key 
+limitations. They are often too general. This leaves vulnerable communities in flood-prone 
+areas like Gampaha without the timely alerts they need. 
+ 
+This project identifies and addresses three specific gaps in the current approach: 
+ 
+Technological Gap 
+Many current flood alert systems rely on simple alert triggers (e.g., sounding an alarm only 
+after a river reaches a certain height) or manual human observation. These systems lack the 
+power to predict a flood before it happens. Advanced methods like deep learning, particularly 
+Long Short-Term Memory (LSTM) networks, are scientifically proven to be highly effective 
+for time-series forecasting (Hochreiter & Schmidhuber, 1997). However, this predictive 
+technology is not widely used in Sri Lanka's regional flood management. 
+ 
+Contextual Gap 
+Current flood models are often not customized for the local risks of a specific area like the 
+Aththanagalu Oya basin. Much of the existing research in deep learning is applied to very 
+large, global rivers or major "smart cities" (Goodfellow et al., 2016), while smaller, high-risk 
+river basins are overlooked. Furthermore, crucial local data such as specific land-use patterns, 
+soil types, or mining activities that directly impact how an area floods is often not included in 
+the prediction models. 
+ 
+Integration Gap 
+Currently, disaster response tools often work in isolation an alert system is separate from a 
+flood map, which is separate from a community support dashboard. There is a need for 
+unified platform that integrates all these elements. Combining real-time predictions, alerts, 
+and community coordination into one system is a modern approach to managing complex 
+challenges (Siemens, 2013). This project aims to close this gap, moving from a disconnected 
+approach to a centralized, integrated system. 
+ 
+ 
+ 
+This project addresses these gaps by: 
+• Developing a predictive model using deep learning (LSTM) for rainfall and river 
+levels. 
+• Focusing this model on the specific context of a vulnerable area (Gampaha) using 
+local datasets. 
+• Integrating the predictive model with accessible SMS alerts to ensure inclusive reach. 
+• Building a single, centralized platform that combines all these features. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 8 ---
+ 
+ 
+8 
+ 
+4. Requirements Analysis 
+ 
+4.1 Requirements Collection 
+ 
+• Community Interviews and Surveys: Conducted informal interviews with residents in 
+flood-prone areas of Gampaha to understand alert preferences, past flood experiences, 
+and communication gaps 
+ 
+• Environmental Data Analysis: Reviewed past rainfall, river level, and flood 
+occurrence data from sources such as the Irrigation Department, Meteorology 
+Department, and AccuWeather API, identifying trends and limitations in existing 
+records. 
+ 
+4.2 Functional Requirements 
+ 
+ 
+4.3 Non Functional Requirements 
+ 
+ 4.4 User Requirements 
+ 
+ 
+Requirement Description 
+User Authentication Secure registration for residents, admins, and response teams 
+Real-Time Weather 
+Feed 
+Display current rainfall, temperature, and weather alerts via free 
+APIs 
+Flood Prediction Predict flood risk using rainfall, elevation, and historical data 
+Warning Notification Send SMS alerts to users in risk zones  
+Alert Dashboard Visual display of predicted zones, warning levels, and rainfall 
+heatmaps 
+Admin Control Panel Manage data inputs, monitor warnings, control message triggers 
+Requirement Description 
+Performance Predictions and alert generation within 5 - 10 seconds 
+Scalability Capable of serving 200+ simultaneous users in affected regions 
+Usability Mobile-friendly UI with map based navigation and minimal learning curve 
+Security Secure user data such as location with encryption 
+Accessibility Works on both smartphones and basic desktops  
+User Role Requirement 
+General User (Citizen) Receive early flood alerts via SMS, view current weather data and 
+flood maps 
+Administrator Manage user roles, maintain database, validate incoming data, 
+monitor system health 
+
+
+--- PAGE 9 ---
+ 
+ 
+9 
+ 
+ 
+4.5 Tools and Knowledge Required 
+The following table details the complete technology stack and development tools required for 
+the development and deployment of the FloodGuard system. 
+ 
+ 
+4.6 Technology Stack 
+ 
+The following technologies and tools will be used in the development and deployment of the 
+FloodGuard system: 
+Layer Technology / Tool Purpose 
+Frontend React.js, CSS To implement a clean user interface for 
+desktop and mobile users. 
+Backend ExpressJS, NodeJS 
+For the implementation of server-side 
+logic, to handle API requests, and 
+manage system operations. 
+Database MongoDB Atlas 
+(Cloud) 
+For secure storage of user data, 
+historical readings, and generated flood 
+alerts. 
+Machine 
+Learning 
+Python, 
+TensorFlow/Keras 
+To develop, train, and deploy the LSTM 
+model for predictive flood pattern 
+recognition. 
+External APIs OpenWeatherMap, 
+(Twilio) 
+To fetch real-time weather data and to 
+send automated  flood warnings via 
+SMS. 
+Authentication JWT (JSON Web 
+Tokens) 
+To secure user accounts and manage 
+access permissions. 
+Hosting Vercel (Frontend), 
+Heroku (Backend) 
+For deploying the web application and 
+database, making them accessible to the 
+public. 
+Dev. Tools Git, GitHub, VS Code, 
+Postman 
+For version control, code collaboration, 
+and API testing. 
+ 
+ 
+ 
+
+
+--- PAGE 10 ---
+ 
+ 
+10 
+ 
+ 
+5. Finance 
+ 
+ 
+5.1 Budget Plan 
+ 
+ 
+Item Description Estimated Cost 
+(LKR) 
+Existing Computing 
+Device 
+Used for code development, testing, and basic 
+system setup – 
+Domain & Hosting Subscription for web domain and reliable 
+cloud infrastructure 10,000 
+Software Tools External API credits for advanced processing 
+capabilities 21,000 
+Development & 
+Testing Internet usage, account setup 5,000 
+Miscellaneous Reserved for unexpected requirements 10,000 
+Total Estimated Cost  46,000 
+ 
+ 
+ 
+ 
+6. External Organizations 
+ 
+Academic Supervision 
+This project is carried out under the academic supervision of the Faculty of Computing, 
+Plymouth University, providing consistent monitoring and expert guidance throughout the 
+system's development lifecycle which includes, 
+ 
+• Continuous supervision and assessment of project progress 
+• Feedback support for improving usability and technical accuracy 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 11 ---
+ 
+ 
+11 
+ 
+7. Timeline 
+ 
+The project progresses through a structured sequence of activities. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Figure 7.1: Project timeline illustrated by a Gantt chart. 
+
+
+--- PAGE 12 ---
+ 
+ 
+12 
+ 
+8. References 
+ 
+Chathurani, K. L. N., Arunashantha, H. a. S., Kumara, B. a. S., Thilakarathna, P. M. U. I., & 
+Kaushalya, G. a. a. N. (2022). Case study on identification of flood hazard in the lower 
+catchment area of the Attanagalu Oya River Basin. Journal of Geoscience and Environment 
+Protection, 10(07), 305–318. https://doi.org/10.4236/gep.2022.107018 
+ 
+Climate Fact Checks. (2023, December 23). Launching of the New Disaster Early Warning 
+System in Sri Lanka. Climate Fact Checks. https://climatefactchecks.org/states-of-the-art-
+disaster-early-warning-system-in-sri-lanka/ 
+ 
+Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press. 
+ 
+Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. Neural Computation, 
+9(8), 1735-1780. 
+https://www.researchgate.net/publication/390256293_A_Novel_LSTM_Approach_for_Relia
+ble_and_Real-Time_Flood_Prediction_in_Complex_Watersheds 
+ 
+Siemens, G. (2013). Learning analytics: The emergence of a discipline. American Behavioral 
+Scientist, 57(10), 1380-1400. https://doi.org/10.1177/0002764213498851 
+ 
+United Nations Office for Disaster Risk Reduction (UNDRR), & World Meteorological 
+Organization (WMO). (2022). Global status of multi-hazard early warning systems: Target 
+G. UNDRR. https://www.undrr.org/publication/global-status-multi-hazard-early-warning-
+systems-target-g 
+ 
+ 
+  
+
+
+--- PAGE 13 ---
+ 
+ 
+13 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+……………………………………   End of Document   ………………………………… 
+ 
+ 
+ 
+ 
+ 
+ 

@@ -1,44 +1,52 @@
-import numpy as np
-import joblib
-import os
-import tensorflow as tf
+import json
+import subprocess
+import sys
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_DIR = os.path.join(BASE_DIR, "ml", "models")
+BASE_DIR = Path(__file__).resolve().parents[1]
+PREDICT_SCRIPT = BASE_DIR / "ml" / "predict_lstm.py"
 
-try:
-    from tensorflow.keras.models import load_model
-except Exception:
-    from keras.models import load_model
+payload = [
+    {
+        "date": f"2026-05-{day:02d}",
+        "water_level": 3.0 + (day * 0.03),
+        "rainfall": 2.5 if day % 3 else 8.0,
+        "temperature": 27.5,
+        "humidity": 88,
+        "wind_speed": 12,
+    }
+    for day in range(1, 15)
+]
 
-model_path = os.path.join(MODEL_DIR, "floodguard_lstm_model.keras")
-scaler_path = os.path.join(MODEL_DIR, "floodguard_scaler.pkl")
+result = subprocess.run(
+    [sys.executable, str(PREDICT_SCRIPT)],
+    input=json.dumps(payload),
+    text=True,
+    capture_output=True,
+    cwd=str(BASE_DIR),
+    timeout=60,
+)
 
-print("Loading model and scaler...")
-model = load_model(model_path)
-scaler = joblib.load(scaler_path)
+if result.returncode != 0:
+    print("FAIL ML smoke test")
+    print(result.stderr)
+    sys.exit(result.returncode)
 
-# Simulated sequence of 24 readings for a single feature (e.g. water_level)
-# In reality, this would be fetched from the database or the last 24 hours of data.
-sample_data = np.array([
-    [2.1], [2.2], [2.4], [2.8], [3.1], [3.5], [3.8], [4.1],
-    [4.3], [4.5], [4.6], [4.7], [4.8], [4.9], [5.0], [5.1],
-    [5.2], [5.2], [5.3], [5.4], [5.5], [5.6], [5.7], [5.8]
-])
+prediction = json.loads(result.stdout)
+required_keys = {"location", "district", "modelVersion", "day1", "day2"}
+missing = required_keys - set(prediction)
 
-print("Predicting flood risk...")
-sample_scaled = scaler.transform(sample_data)
+if missing:
+    print(f"FAIL ML smoke test: missing keys {sorted(missing)}")
+    sys.exit(1)
 
-# Shape must be (samples, TIME_STEPS, features)
-sample_sequence = np.array(sample_scaled).reshape(1, 24, 1)
+if "rf-" not in prediction["modelVersion"]:
+    print(f"FAIL ML smoke test: expected Random Forest model, got {prediction['modelVersion']}")
+    sys.exit(1)
 
-prediction = model.predict(sample_sequence)
-risk_index = int(np.argmax(prediction))
-confidence = float(np.max(prediction))
-
-risk_labels = ["None", "Low", "Moderate", "High", "Critical"]
-
-print("\n--- FloodGuard Prediction Result ---")
-print("Risk Level:", risk_labels[risk_index])
-print(f"Confidence: {confidence * 100:.2f}%")
-print("Probabilities:", np.round(prediction[0], 4))
+print("PASS ML smoke test")
+print(json.dumps({
+    "modelVersion": prediction["modelVersion"],
+    "day1Risk": prediction["day1"]["riskLevel"],
+    "day2Risk": prediction["day2"]["riskLevel"],
+}, indent=2))

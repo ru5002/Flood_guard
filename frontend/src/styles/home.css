@@ -17,6 +17,8 @@
 .location-risk-banner.high     { background: #ffedd5; border-bottom: 2px solid #f97316; color: #9a3412; }
 .location-risk-banner.moderate { background: #fef9c3; border-bottom: 2px solid #eab308; color: #854d0e; }
 .location-risk-banner.low      { background: #f0fdf4; border-bottom: 1px solid #bcf0da; color: #166534; }
+.location-risk-banner.none     { background: #f0fdf4; border-bottom: 1px solid #bcf0da; color: #166534; }
+.location-risk-banner.unknown  { background: #eff6ff; border-bottom: 1px solid #bfdbfe; color: #1d4ed8; }
 
 .location-risk-banner .banner-content {
   max-width: 1280px;

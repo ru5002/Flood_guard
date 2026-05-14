@@ -9,9 +9,10 @@ import HERO_IMAGE from '../assets/flood.png';
 const riskClass = (level) => {
     const map = {
         Normal: 'pill-success', Low: 'pill-success', None: 'pill-success',
-        Moderate: 'pill-warning', High: 'pill-danger', Critical: 'pill-danger'
+        Moderate: 'pill-warning', High: 'pill-danger', Critical: 'pill-danger',
+        Unknown: 'pill-warning', Checking: 'pill-warning'
     };
-    return map[level] || 'pill-success';
+    return map[level] || 'pill-warning';
 };
 
 const MonitoringIcon = ({ dark }) => (
@@ -73,13 +74,14 @@ const stats = [
 const Home = () => {
     const { temp, condition, humidity, wind, location, floodRisk, loading } = useLiveStats();
 
-    const getRiskMessage = (risk) => {
+    const getLiveRiskMessage = (risk) => {
         switch (risk) {
-            case 'Critical': return '⚠️ EXTREME DANGER! Move to higher ground immediately.';
-            case 'High': return '🚫 High Risk! Prepare for possible evacuation.';
-            case 'Moderate': return '🟠 Moderate Risk. Stay alert for river level changes.';
-            case 'Low': return '✅ Low Risk. Conditions are stable in your area.';
-            default: return '✅ No flood risk detected in your current location.';
+            case 'Critical': return 'CRITICAL flood warning. Move to higher ground immediately and follow official evacuation guidance.';
+            case 'High': return 'High flood risk detected from the latest live update. Prepare for possible evacuation.';
+            case 'Moderate': return 'Moderate flood risk detected. Stay alert and avoid low-lying areas.';
+            case 'Low': return 'Low flood risk from the latest live update. Keep monitoring conditions.';
+            case 'None': return 'No flood risk detected from the latest live update.';
+            default: return 'Checking live rainfall and gauge updates...';
         }
     };
 
@@ -87,17 +89,15 @@ const Home = () => {
         <div className="page-wrapper">
             <Navbar />
             <main className="home-main">
-                {/* ── Location Risk Alert ── */}
-                {!loading && (
-                    <div className={`location-risk-banner ${floodRisk?.toLowerCase()}`}>
-                        <div className="banner-content">
-                            <span className="banner-icon">📍</span>
-                            <span className="banner-text">
-                                <strong>Your Location ({location}):</strong> {getRiskMessage(floodRisk)}
-                            </span>
-                        </div>
+                {/* Location Risk Alert */}
+                <div className={`location-risk-banner ${(floodRisk || 'unknown').toLowerCase()}`}>
+                    <div className="banner-content">
+                        <span className="banner-icon">!</span>
+                        <span className="banner-text">
+                            <strong>Your Location ({location || 'Gampaha'}):</strong> {loading ? getLiveRiskMessage('Unknown') : getLiveRiskMessage(floodRisk)}
+                        </span>
                     </div>
-                )}
+                </div>
 
                 {/* ── Hero ── */}
                 <section className="hero-section">
@@ -165,7 +165,7 @@ const Home = () => {
                                             <div className="fc-risk-row">
                                                 <span className="fc-label">Flood Risk</span>
                                                 <span className={`fc-risk-pill ${riskClass(floodRisk)}`}>
-                                                    {floodRisk || 'None'}
+                                                    {floodRisk === 'Unknown' ? 'Checking' : floodRisk || 'Checking'}
                                                 </span>
                                             </div>
                                         </>

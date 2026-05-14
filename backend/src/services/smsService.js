@@ -17,8 +17,24 @@ const isTwilioConfigured = () =>
     !!(
         process.env.TWILIO_ACCOUNT_SID &&
         process.env.TWILIO_AUTH_TOKEN &&
-        process.env.TWILIO_FROM_NUMBER
+        (process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_MESSAGING_SERVICE_SID)
     );
+
+const normalizeSriLankanPhone = (phoneNumber = "") => {
+    const compact = String(phoneNumber).replace(/[^\d+]/g, "");
+    if (compact.startsWith("+")) return compact;
+    if (compact.startsWith("94")) return `+${compact}`;
+    if (compact.startsWith("0") && compact.length === 10) return `+94${compact.slice(1)}`;
+    return compact;
+};
+
+const safeLogSMS = async (data) => {
+    try {
+        await SMSLog.create(data);
+    } catch (err) {
+        console.warn(`[SMS] Could not save SMS log: ${err.message}`);
+    }
+};
 
 /**
  * Send a single SMS.
@@ -28,8 +44,9 @@ const isTwilioConfigured = () =>
  * @returns {{ success: boolean, sid?: string, simulated?: boolean }}
  */
 const sendSMS = async (phoneNumber, message, meta = {}) => {
+    const normalizedPhone = normalizeSriLankanPhone(phoneNumber);
     const logData = {
-        phoneNumber,
+        phoneNumber: normalizedPhone,
         message,
         zone:       meta.zone       || null,
         riskLevel:  meta.riskLevel  || null,
@@ -45,26 +62,33 @@ const sendSMS = async (phoneNumber, message, meta = {}) => {
                 process.env.TWILIO_AUTH_TOKEN
             );
 
-            const result = await client.messages.create({
+            const messagePayload = {
                 body: message,
-                from: process.env.TWILIO_FROM_NUMBER,
-                to:   phoneNumber,
-            });
+                to:   normalizedPhone,
+            };
 
-            await SMSLog.create({ ...logData, status: "SENT", twilioSid: result.sid });
-            console.log(`[SMS] Sent via Twilio to ${phoneNumber}  sid=${result.sid}`);
+            if (process.env.TWILIO_MESSAGING_SERVICE_SID) {
+                messagePayload.messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
+            } else {
+                messagePayload.from = process.env.TWILIO_FROM_NUMBER;
+            }
+
+            const result = await client.messages.create(messagePayload);
+
+            await safeLogSMS({ ...logData, status: "SENT", twilioSid: result.sid });
+            console.log(`[SMS] Sent via Twilio to ${normalizedPhone}  sid=${result.sid}`);
             return { success: true, sid: result.sid };
         } catch (err) {
-            console.error(`[SMS] Twilio error for ${phoneNumber}:`, err.message);
-            await SMSLog.create({ ...logData, status: "FAILED", errorMessage: err.message });
+            console.error(`[SMS] Twilio error for ${normalizedPhone}:`, err.message);
+            await safeLogSMS({ ...logData, status: "FAILED", errorMessage: err.message });
             return { success: false, error: err.message };
         }
     }
 
     // Simulation mode
-    console.log(`[SMS SIMULATED] To: ${phoneNumber}`);
+    console.log(`[SMS SIMULATED] To: ${normalizedPhone}`);
     console.log(`[SMS SIMULATED] Message: ${message}`);
-    await SMSLog.create({ ...logData, status: "SIMULATED" });
+    await safeLogSMS({ ...logData, status: "SIMULATED" });
     return { success: true, simulated: true };
 };
 
@@ -85,4 +109,4 @@ const sendBulkSMS = async (phoneNumbers, message, meta = {}) => {
     return { sent, failed, simulated, total: phoneNumbers.length };
 };
 
-module.exports = { sendSMS, sendBulkSMS, isTwilioConfigured };
+module.exports = { sendSMS, sendBulkSMS, isTwilioConfigured, normalizeSriLankanPhone };

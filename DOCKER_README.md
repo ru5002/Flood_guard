@@ -1,23 +1,58 @@
-# Docker Configuration
+# FloodGuard Docker Setup
 
-## Instructions to Run with Docker
+## Run The Full App
 
-1.  **Install Docker Desktop**: Ensure Docker is installed and running.
-2.  **Build and Start**: Open a terminal in the project root (`floodguard_final`) and run:
-    ```bash
-    docker-compose up --build
-    ```
-3.  **Access App**:
-    -   Frontend: [http://localhost](http://localhost)
-    -   Backend API: [http://localhost:5000](http://localhost:5000)
-    -   MongoDB: `mongodb://localhost:27017` (Connect via Compass)
+Install Docker Desktop, open a terminal in `floodguard_final`, then run:
 
-## Configuration Details
+```bash
+docker compose up --build
+```
 
--   **Frontend**: Served via Nginx on port 80. Proxies `/api` requests to the backend.
--   **Backend**: Node.js server on port 5000. Connected to MongoDB container.
--   **MongoDB**: Persistent database storage in `floodguard_data` volume. exposed on port 27017.
+On Windows, Docker Desktop must be running. If Docker says access is denied for `docker_engine`, open the terminal as Administrator or fix Docker Desktop permissions, then run the same command again.
+
+Docker will build and run:
+
+- MongoDB on `localhost:27017`
+- Backend API on `localhost:5000`
+- Frontend on `http://localhost:5173`
+- Python ML runtime inside the backend image
+
+The backend image trains the Random Forest model during build from:
+
+`Aththanagalu Oya Hydrological Time-Series Dataset.xlsx`
+
+## Useful Commands
+
+Stop the app:
+
+```bash
+docker compose down
+```
+
+Stop and remove MongoDB data:
+
+```bash
+docker compose down -v
+```
+
+Rebuild after code or model changes:
+
+```bash
+docker compose up --build
+```
+
+View logs:
+
+```bash
+docker compose logs -f backend
+```
 
 ## Notes
--If you change code, rebuild with `docker-compose up --build`.
--Data persists even if containers are stopped. ensure unique `floodguard_data` volume name if running multiple instances.
+
+The frontend uses Nginx to proxy `/api` requests to the backend container, so the browser should use `http://localhost:5173`.
+
+If you have an OpenWeather key, create a local `.env` file in the project root:
+
+```env
+OPENWEATHER_API_KEY=your_key_here
+```

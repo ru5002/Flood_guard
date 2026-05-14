@@ -6,6 +6,7 @@ const { adminAuth } = require('../middleware/adminAuth');
 // Public – readable by the frontend without login
 router.get('/latest',           predictionsController.getLatestPredictions);
 router.get('/live',             predictionsController.generateLivePrediction);
+router.get('/official-zones',   predictionsController.getOfficialZonePredictions);
 router.get('/summary',          predictionsController.getPredictionSummary);
 router.get('/history/:location', predictionsController.getPredictionHistory);
 

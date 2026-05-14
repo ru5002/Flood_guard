@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser } = require('../controllers/userAuthController');
+const { registerUser, loginUser, updateUserProfile, sendUserLocationAlert } = require('../controllers/userAuthController');
 
 // @route   POST api/users/register
 // @desc    Register a user
@@ -11,6 +11,16 @@ router.post('/register', registerUser);
 // @desc    Login a user
 // @access  Public
 router.post('/login', loginUser);
+
+// @route   PUT api/users/:id
+// @desc    Update user profile
+// @access  Public (for demo purposes)
+router.put('/:id', updateUserProfile);
+
+// @route   POST api/users/:id/location-alert
+// @desc    Send/simulate a location-based flood SMS for the user's registered zone
+// @access  Public (demo)
+router.post('/:id/location-alert', sendUserLocationAlert);
 
 module.exports = router;
 

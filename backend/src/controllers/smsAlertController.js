@@ -5,7 +5,8 @@
 
 const User    = require("../models/User");
 const SMSLog  = require("../models/SMSLog");
-const { sendBulkSMS, isTwilioConfigured } = require("../services/smsService");
+const { sendSMS, sendBulkSMS, isTwilioConfigured } = require("../services/smsService");
+const { fetchRainForecast, fetchAllRainForecasts, resolveForecastZone } = require("../services/weatherForecastService");
 
 const RISK_MESSAGES = {
     Critical: (zone) =>
@@ -121,6 +122,115 @@ exports.getZones = async (req, res) => {
         const zones = await User.distinct("zone", { isActive: true });
         res.json({ success: true, zones: zones.filter(Boolean).sort() });
     } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+const rainAlertMessage = (forecast) => {
+    const timeText = forecast.expectedAt
+        ? new Date(forecast.expectedAt).toLocaleString("en-LK", { dateStyle: "medium", timeStyle: "short" })
+        : "the next few hours";
+
+    const action =
+        forecast.severity === "High"
+            ? "Avoid low-lying roads, keep valuables safe, and prepare to move if water rises."
+            : forecast.severity === "Moderate"
+                ? "Monitor drains/river levels and avoid unnecessary travel near waterways."
+                : "Stay aware and follow local updates.";
+
+    return `FloodGuard Alert: ${forecast.severity} rain risk for ${forecast.zone}. ` +
+        `Rain expected by ${timeText}. Chance ${forecast.probability}%, rain ${forecast.totalRainMm}mm. ` +
+        `${action} Emergency: DMC 117.`;
+};
+
+exports.dispatchRainForecastAlerts = async (req, res) => {
+    try {
+        const hoursAhead = Number(req.body.hoursAhead || 12);
+        const requestedZone = req.body.zone || "ALL";
+        const forecasts = requestedZone === "ALL"
+            ? await fetchAllRainForecasts(hoursAhead)
+            : [await fetchRainForecast(requestedZone, hoursAhead)];
+
+        const rainyForecasts = forecasts.filter((forecast) => forecast.rainExpected);
+        if (!rainyForecasts.length) {
+            return res.json({
+                success: true,
+                message: `No rain expected within ${hoursAhead} hours for ${requestedZone}. No SMS sent.`,
+                forecasts,
+                twilioActive: isTwilioConfigured(),
+            });
+        }
+
+        const results = [];
+        for (const forecast of rainyForecasts) {
+            const zone = resolveForecastZone(forecast.zone);
+            const possibleZones = [zone.name, ...zone.aliases];
+            const users = await User.find({
+                isActive: true,
+                alertsEnabled: true,
+                phone: { $exists: true, $ne: "" },
+                zone: { $in: possibleZones },
+            }).select("phone name zone").lean();
+
+            const message = rainAlertMessage(forecast);
+            const sendResult = await sendBulkSMS(users.map((u) => u.phone), message, {
+                zone: forecast.zone,
+                riskLevel: forecast.severity,
+                sentBy: req.admin?.name || req.admin?.email || "rain-forecast-system",
+                alertTitle: `${forecast.severity} Rain Alert - ${forecast.zone}`,
+            });
+
+            results.push({ forecast, recipientCount: users.length, sendResult });
+        }
+
+        res.json({
+            success: true,
+            message: "Rain forecast alert check completed.",
+            results,
+            twilioActive: isTwilioConfigured(),
+        });
+    } catch (err) {
+        console.error("[Alert] dispatchRainForecastAlerts error:", err.message);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.testRainAlertToNumber = async (req, res) => {
+    try {
+        const { phone, zone = "Gampaha", hoursAhead = 12, force = false } = req.body;
+        if (!phone) {
+            return res.status(400).json({ success: false, message: "phone is required." });
+        }
+
+        const forecast = await fetchRainForecast(zone, Number(hoursAhead));
+        if (!forecast.rainExpected && !force) {
+            return res.json({
+                success: true,
+                message: `No rain expected in ${forecast.zone}; test SMS not sent. Use force=true to send anyway.`,
+                forecast,
+                twilioActive: isTwilioConfigured(),
+            });
+        }
+
+        const message = rainAlertMessage(forecast);
+        const result = await sendSMS(phone, message, {
+            zone: forecast.zone,
+            riskLevel: forecast.severity,
+            sentBy: req.admin?.name || req.admin?.email || "admin-test",
+            alertTitle: `Test Rain Alert - ${forecast.zone}`,
+        });
+
+        res.json({
+            success: result.success,
+            message: result.simulated
+                ? "Test rain alert simulated. Configure Twilio/Dialog SMS gateway credentials for real delivery."
+                : "Test rain alert sent.",
+            forecast,
+            result,
+            twilioActive: isTwilioConfigured(),
+        });
+    } catch (err) {
+        console.error("[Alert] testRainAlertToNumber error:", err.message);
         res.status(500).json({ success: false, message: err.message });
     }
 };

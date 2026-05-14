@@ -23,16 +23,14 @@ const Login = () => {
         setLoading(true);
         setError('');
 
+        const email = formData.email.trim();
+
         try {
             // Logic to check if user is admin or regular user
             // 1. Try Admin Login
             try {
-                // Use relative path '/api' which Nginx proxies to backend
-                // OR use absolute URL if not behind Nginx (e.g. localhost:5000)
-                // For Docker setup with Nginx proxy, '/api' is preferred but hardcoded localhost:5000 works if exposed. 
-                // Let's stick to localhost:5000 as per previous setup, but add proper error catching
                 const adminResponse = await axios.post('/api/admin/auth/login', {
-                    email: formData.email,
+                    email,
                     password: formData.password
                 });
                 
@@ -56,22 +54,25 @@ const Login = () => {
             // 2. Try User Login (Regular User)
             try {
                 const userResponse = await axios.post('/api/users/login', {
-                    email: formData.email,
+                    email,
                     password: formData.password
                 });
 
                 if (userResponse.status === 200) {
                      // User Login Success
                     console.log('User login success', userResponse.data);
+                    localStorage.setItem('userToken', userResponse.data.token);
                     localStorage.setItem('userData', JSON.stringify(userResponse.data.user));
-                    // Redirect to Map or Home
-                    navigate('/map');
+                    // Redirect to Home page instead of Map
+                    navigate('/');
                     return;
                 }
             } catch (userError) {
                 // Both Admin and User login failed
-                console.error("User login error:", userError);
-                setError('Invalid email or password.');
+                console.error("User login error:", userError.response?.data || userError.message);
+                const d = userError.response?.data;
+                const backendMsg = d?.message || d?.error;
+                setError(backendMsg || 'Invalid email or password.');
             }
 
         } catch (err) {
