@@ -6,6 +6,8 @@ import '../styles/home.css';
 import useLiveStats from '../hooks/useLiveStats';
 import HERO_IMAGE from '../assets/flood.png';
 
+const DMC_GUIDANCE_URL = 'https://www.dmc.gov.lk/index.php?id=60&lang=en&option=com_content&view=article';
+
 const riskClass = (level) => {
     const map = {
         Normal: 'pill-success', Low: 'pill-success', None: 'pill-success',
@@ -73,10 +75,18 @@ const stats = [
 
 const Home = () => {
     const { temp, condition, humidity, wind, location, floodRisk, loading } = useLiveStats();
+    const displayRisk = loading || floodRisk === 'Unknown' ? 'Checking' : floodRisk;
 
     const getLiveRiskMessage = (risk) => {
         switch (risk) {
-            case 'Critical': return 'CRITICAL flood warning. Move to higher ground immediately and follow official evacuation guidance.';
+            case 'Critical': return (
+                <>
+                    CRITICAL flood warning. Move to higher ground immediately and follow{' '}
+                    <a href={DMC_GUIDANCE_URL} target="_blank" rel="noreferrer">
+                        official DMC evacuation guidance
+                    </a>.
+                </>
+            );
             case 'High': return 'High flood risk detected from the latest live update. Prepare for possible evacuation.';
             case 'Moderate': return 'Moderate flood risk detected. Stay alert and avoid low-lying areas.';
             case 'Low': return 'Low flood risk from the latest live update. Keep monitoring conditions.';
@@ -92,10 +102,15 @@ const Home = () => {
                 {/* Location Risk Alert */}
                 <div className={`location-risk-banner ${(floodRisk || 'unknown').toLowerCase()}`}>
                     <div className="banner-content">
-                        <span className="banner-icon">!</span>
-                        <span className="banner-text">
-                            <strong>Your Location ({location || 'Gampaha'}):</strong> {loading ? getLiveRiskMessage('Unknown') : getLiveRiskMessage(floodRisk)}
-                        </span>
+                        <div className="banner-icon" aria-hidden="true">!</div>
+                        <div className="banner-copy">
+                            <div className="banner-topline">
+                                <span className="banner-kicker">Live location alert</span>
+                                <span className="banner-severity">{displayRisk}</span>
+                            </div>
+                            <h2>Your Location ({location || 'Gampaha'})</h2>
+                            <p>{loading ? getLiveRiskMessage('Unknown') : getLiveRiskMessage(floodRisk)}</p>
+                        </div>
                     </div>
                 </div>
 

@@ -8,15 +8,17 @@ const SMSLog  = require("../models/SMSLog");
 const { sendSMS, sendBulkSMS, isTwilioConfigured } = require("../services/smsService");
 const { fetchRainForecast, fetchAllRainForecasts, resolveForecastZone } = require("../services/weatherForecastService");
 
+const zoneLabel = (zone) => (zone === "ALL" ? "all registered flood zones" : zone);
+
 const RISK_MESSAGES = {
     Critical: (zone) =>
-        `FLOOD ALERT - CRITICAL: Severe flooding imminent in ${zone}. EVACUATE IMMEDIATELY. Avoid all water bodies. Call DMC: 117.`,
+        `FLOOD ALERT - CRITICAL: Severe flooding imminent in ${zoneLabel(zone)}. EVACUATE IMMEDIATELY. Avoid all water bodies. Call DMC: 117.`,
     High: (zone) =>
-        `FLOOD WARNING - HIGH RISK: Significant flooding expected in ${zone}. Move valuables upstairs. Stay alert. DMC: 117.`,
+        `FLOOD WARNING - HIGH RISK: Significant flooding expected in ${zoneLabel(zone)}. Move valuables upstairs. Stay alert. DMC: 117.`,
     Moderate: (zone) =>
-        `FLOOD ADVISORY - MODERATE: Elevated flood risk in ${zone}. Monitor river levels. Avoid low-lying areas. DMC: 117.`,
+        `FLOOD ADVISORY - MODERATE: Elevated flood risk in ${zoneLabel(zone)}. Monitor river levels. Avoid low-lying areas. DMC: 117.`,
     Low: (zone) =>
-        `FLOOD WATCH - LOW RISK: Minor flooding possible in ${zone}. Stay informed and avoid unnecessary travel near waterways.`,
+        `FLOOD WATCH - LOW RISK: Minor flooding possible in ${zoneLabel(zone)}. Stay informed and avoid unnecessary travel near waterways.`,
 };
 
 exports.dispatchAlert = async (req, res) => {

@@ -1,39 +1,76 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, Home, Send, Clock, BarChart2 } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Users,
+    Bell,
+    Home,
+    Send,
+    Clock,
+    BarChart2,
+    Radio,
+    ShieldAlert,
+    MessageSquareText,
+    RefreshCw,
+    CheckCircle2,
+    AlertTriangle,
+    XCircle,
+    MapPin,
+    Activity,
+} from 'lucide-react';
 import '../../styles/admin.css';
 
 const RISK_LEVELS = ['Critical', 'High', 'Moderate', 'Low'];
+const STATUS_LEVELS = ['SENT', 'SIMULATED', 'FAILED'];
 
-const RISK_COLORS = {
-    Critical: { bg: '#fee2e2', color: '#dc2626', border: '#fca5a5' },
-    High:     { bg: '#fff7ed', color: '#ea580c', border: '#fdba74' },
-    Moderate: { bg: '#fefce8', color: '#ca8a04', border: '#fde047' },
-    Low:      { bg: '#f0fdf4', color: '#16a34a', border: '#86efac' },
+const RISK_GUIDANCE = {
+    Critical: {
+        title: 'Immediate Flood Risk',
+        action: 'Use when evacuation or immediate movement to higher ground is required.',
+        checklist: ['Confirm zone and recipient coverage', 'Use clear evacuation wording', 'Include DMC 117 for official help'],
+        message: (zone) => `FLOOD ALERT - CRITICAL: Severe flooding is possible in ${zone}. Move to higher ground immediately and follow official evacuation guidance. DMC: 117.`,
+    },
+    High: {
+        title: 'High Flood Warning',
+        action: 'Use when flooding is likely and residents should prepare to move quickly.',
+        checklist: ['Warn residents early', 'Advise avoiding canals and low roads', 'Ask users to protect essentials'],
+        message: (zone) => `FLOOD WARNING - HIGH RISK: Flooding is possible in ${zone}. Keep essentials ready, avoid low-lying roads, and prepare to evacuate if water rises. DMC: 117.`,
+    },
+    Moderate: {
+        title: 'Moderate Flood Advisory',
+        action: 'Use when conditions are worsening and residents should monitor closely.',
+        checklist: ['Keep wording calm but firm', 'Mention monitoring river/drain levels', 'Reduce unnecessary travel'],
+        message: (zone) => `FLOOD ADVISORY - MODERATE: Flood risk is increasing in ${zone}. Monitor updates, avoid low-lying areas, and keep emergency items ready. DMC: 117.`,
+    },
+    Low: {
+        title: 'Low Flood Watch',
+        action: 'Use for awareness when flooding is not expected but monitoring continues.',
+        checklist: ['Use informational wording', 'Avoid creating unnecessary alarm', 'Remind users to follow updates'],
+        message: (zone) => `FLOOD WATCH - LOW RISK: Minor flooding is possible in ${zone}. Stay informed and avoid unnecessary travel near waterways.`,
+    },
 };
 
-const STATUS_COLORS = {
-    SENT:      '#16a34a',
-    SIMULATED: '#2563eb',
-    FAILED:    '#dc2626',
-};
+const riskClass = (level) => `risk-${String(level || 'low').toLowerCase()}`;
+const statusClass = (status) => `status-${String(status || 'unknown').toLowerCase()}`;
+const formatDateTime = (value) => (value ? new Date(value).toLocaleString() : '-');
 
 const AdminAlertsManagement = () => {
-    const [zones, setZones]             = useState([]);
-    const [stats, setStats]             = useState(null);
-    const [logs, setLogs]               = useState([]);
-    const [logPage, setLogPage]         = useState(1);
-    const [logTotal, setLogTotal]       = useState(0);
-    const [logPages, setLogPages]       = useState(1);
-    const [loading, setLoading]         = useState(true);
+    const [zones, setZones] = useState([]);
+    const [stats, setStats] = useState(null);
+    const [logs, setLogs] = useState([]);
+    const [logPage, setLogPage] = useState(1);
+    const [logTotal, setLogTotal] = useState(0);
+    const [logPages, setLogPages] = useState(1);
+    const [loading, setLoading] = useState(true);
     const [dispatching, setDispatching] = useState(false);
-    const [result, setResult]           = useState(null);
-    const [tab, setTab]                 = useState('dispatch');
+    const [result, setResult] = useState(null);
+    const [tab, setTab] = useState('dispatch');
+    const [historyFilters, setHistoryFilters] = useState({ zone: '', status: '' });
 
     const [form, setForm] = useState({
-        zone:          '',
-        riskLevel:     'High',
-        title:         '',
+        zone: '',
+        riskLevel: 'High',
+        title: '',
         customMessage: '',
     });
 
@@ -45,7 +82,10 @@ const AdminAlertsManagement = () => {
     });
 
     useEffect(() => {
-        if (!localStorage.getItem('adminData')) { navigate('/admin/login'); return; }
+        if (!localStorage.getItem('adminData')) {
+            navigate('/admin/login');
+            return;
+        }
         loadZones();
         loadStats();
         loadLogs(1);
@@ -53,56 +93,77 @@ const AdminAlertsManagement = () => {
 
     const loadZones = async () => {
         try {
-            const r = await fetch('/api/alerts/zones', { headers: authHeader() });
-            const d = await r.json();
-            if (d.success) setZones(d.zones);
-        } catch {}
+            const response = await fetch('/api/alerts/zones', { headers: authHeader() });
+            const data = await response.json();
+            if (data.success) setZones(data.zones);
+        } catch (error) {
+            console.error('Error loading zones:', error);
+        }
     };
 
     const loadStats = async () => {
         try {
-            const r = await fetch('/api/alerts/stats', { headers: authHeader() });
-            const d = await r.json();
-            if (d.success) setStats(d);
-        } catch {}
-        setLoading(false);
+            const response = await fetch('/api/alerts/stats', { headers: authHeader() });
+            const data = await response.json();
+            if (data.success) setStats(data);
+        } catch (error) {
+            console.error('Error loading alert stats:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const loadLogs = async (page = 1) => {
+    const loadLogs = async (page = 1, filters = historyFilters) => {
         try {
-            const r = await fetch(`/api/alerts/history?page=${page}&limit=10`, { headers: authHeader() });
-            const d = await r.json();
-            if (d.success) {
-                setLogs(d.logs);
-                setLogTotal(d.total);
-                setLogPages(d.pages);
+            const params = new URLSearchParams({ page, limit: 10 });
+            if (filters.zone) params.set('zone', filters.zone);
+            if (filters.status) params.set('status', filters.status);
+
+            const response = await fetch(`/api/alerts/history?${params}`, { headers: authHeader() });
+            const data = await response.json();
+            if (data.success) {
+                setLogs(data.logs);
+                setLogTotal(data.total);
+                setLogPages(data.pages || 1);
                 setLogPage(page);
             }
-        } catch {}
+        } catch (error) {
+            console.error('Error loading alert history:', error);
+        }
     };
 
-    const handleDispatch = async (e) => {
-        e.preventDefault();
+    const refreshConsole = () => {
+        loadZones();
+        loadStats();
+        loadLogs(logPage);
+    };
+
+    const handleDispatch = async (event) => {
+        event.preventDefault();
         if (!form.zone) return alert('Please select a zone.');
+
         setDispatching(true);
         setResult(null);
+
         try {
-            const r = await fetch('/api/alerts/dispatch', {
+            const response = await fetch('/api/alerts/dispatch', {
                 method: 'POST',
                 headers: authHeader(),
                 body: JSON.stringify(form),
             });
-            const d = await r.json();
-            setResult(d);
-            if (d.success) {
+            const data = await response.json();
+            setResult(data);
+
+            if (data.success) {
                 loadStats();
                 loadLogs(1);
-                setForm(f => ({ ...f, title: '', customMessage: '' }));
+                setForm((current) => ({ ...current, title: '', customMessage: '' }));
             }
         } catch (err) {
             setResult({ success: false, message: err.message });
+        } finally {
+            setDispatching(false);
         }
-        setDispatching(false);
     };
 
     const handleLogout = () => {
@@ -111,24 +172,42 @@ const AdminAlertsManagement = () => {
         navigate('/admin/login');
     };
 
-    const riskStyle = (level) => RISK_COLORS[level] || { bg: '#f3f4f6', color: '#6b7280', border: '#d1d5db' };
+    const statusCount = (status) => stats?.byStatus?.find((item) => item._id === status)?.count || 0;
+    const selectedGuidance = RISK_GUIDANCE[form.riskLevel] || RISK_GUIDANCE.Low;
+    const messageTarget = form.zone === 'ALL' ? 'all registered flood zones' : (form.zone || 'the selected zone');
+    const previewMessage = form.customMessage.trim() || selectedGuidance.message(messageTarget);
+    const messageSegments = Math.max(1, Math.ceil(previewMessage.length / 160));
+    const gatewayLabel = result ? (result.twilioActive ? 'Live SMS enabled' : 'Simulation mode') : 'Gateway checked on dispatch';
+
+    const sortedRiskStats = useMemo(() => (
+        [...(stats?.byRisk || [])].sort((a, b) => RISK_LEVELS.indexOf(a._id) - RISK_LEVELS.indexOf(b._id))
+    ), [stats]);
+
+    const maxZoneAlerts = Math.max(...(stats?.byZone || []).map((item) => item.count), 1);
+    const maxRiskAlerts = Math.max(...sortedRiskStats.map((item) => item.count), 1);
 
     return (
         <div className="admin-container">
             <aside className="admin-sidebar">
-                <div className="admin-logo"><h1>FLOODGUARD ADMIN</h1></div>
+                <div className="admin-logo">
+                    <h1>FLOODGUARD ADMIN</h1>
+                </div>
                 <nav className="admin-nav">
-                    <NavLink to="/admin/dashboard" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
-                        <LayoutDashboard size={18} /> Dashboard
+                    <NavLink to="/admin/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <LayoutDashboard size={18} />
+                        Dashboard
                     </NavLink>
-                    <NavLink to="/admin/users" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
-                        <Users size={18} /> Users
+                    <NavLink to="/admin/users" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <Users size={18} />
+                        Users
                     </NavLink>
-                    <NavLink to="/admin/alerts" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
-                        <Bell size={18} /> SMS Alerts
+                    <NavLink to="/admin/alerts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <Bell size={18} />
+                        SMS Alerts
                     </NavLink>
                     <Link to="/" className="admin-nav-link">
-                        <Home size={18} /> Back to Site
+                        <Home size={18} />
+                        Back to Site
                     </Link>
                 </nav>
             </aside>
@@ -136,258 +215,388 @@ const AdminAlertsManagement = () => {
             <main className="admin-main">
                 <div className="admin-header">
                     <div className="admin-header-left">
+                        <span className="admin-kicker">Emergency Communications</span>
                         <h1>SMS Alert Dispatch</h1>
-                        <p>Send zone-based flood warnings to registered users</p>
+                        <p>Send zone-based flood warnings to registered users.</p>
                     </div>
-                    <button onClick={handleLogout} className="btn-logout">Logout</button>
-                </div>
-
-                {/* Stats row */}
-                {stats && (
-                    <div className="stats-grid" style={{ marginBottom: '24px' }}>
-                        <div className="stat-card">
-                            <div className="stat-info">
-                                <h3>Total Sent</h3>
-                                <p className="stat-number">{stats.total}</p>
-                            </div>
-                        </div>
-                        {stats.byStatus?.map(s => (
-                            <div className="stat-card" key={s._id}>
-                                <div className="stat-info">
-                                    <h3>{s._id}</h3>
-                                    <p className="stat-number" style={{ color: STATUS_COLORS[s._id] }}>{s.count}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Tabs */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
-                    {[['dispatch', Send, 'Dispatch Alert'], ['history', Clock, 'History'], ['stats', BarChart2, 'By Zone']].map(([key, Icon, label]) => (
-                        <button
-                            key={key}
-                            onClick={() => setTab(key)}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: '6px',
-                                padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                                background: tab === key ? '#111' : '#f3f4f6',
-                                color: tab === key ? '#fff' : '#374151',
-                                fontWeight: 600, fontSize: '13px',
-                            }}
-                        >
-                            <Icon size={15} /> {label}
+                    <div className="admin-header-right">
+                        <button onClick={refreshConsole} className="admin-secondary-button">
+                            <RefreshCw size={16} />
+                            Refresh
                         </button>
-                    ))}
+                        <button onClick={handleLogout} className="btn-logout">Logout</button>
+                    </div>
                 </div>
 
-                {/* Dispatch Tab */}
-                {tab === 'dispatch' && (
-                    <div className="dashboard-sections">
-                        <div className="dashboard-section" style={{ maxWidth: '560px' }}>
-                            <h2>Compose Alert</h2>
-                            <form onSubmit={handleDispatch} style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
-
+                {loading ? (
+                    <div className="loading">Loading alert console...</div>
+                ) : (
+                    <>
+                        <div className="admin-status-row">
+                            <div className="admin-status-card success">
+                                <Radio size={18} />
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', fontSize: '13px' }}>Target Zone *</label>
-                                    <select
-                                        value={form.zone}
-                                        onChange={e => setForm(f => ({ ...f, zone: e.target.value }))}
-                                        required
-                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #e5e7eb', fontSize: '14px' }}
-                                    >
-                                        <option value="">-- Select zone --</option>
-                                        <option value="ALL">ALL ZONES (broadcast)</option>
-                                        {zones.map(z => <option key={z} value={z}>{z}</option>)}
-                                    </select>
+                                    <span>Dispatch Gateway</span>
+                                    <strong>{gatewayLabel}</strong>
                                 </div>
-
+                            </div>
+                            <div className="admin-status-card">
+                                <MapPin size={18} />
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '8px', fontSize: '13px' }}>Risk Level *</label>
-                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                        {RISK_LEVELS.map(level => {
-                                            const s = riskStyle(level);
-                                            const active = form.riskLevel === level;
-                                            return (
-                                                <button
-                                                    type="button"
-                                                    key={level}
-                                                    onClick={() => setForm(f => ({ ...f, riskLevel: level }))}
-                                                    style={{
-                                                        padding: '6px 16px', borderRadius: '9999px', cursor: 'pointer',
-                                                        border: `2px solid ${active ? s.color : s.border}`,
-                                                        background: active ? s.color : s.bg,
-                                                        color: active ? '#fff' : s.color,
-                                                        fontWeight: 600, fontSize: '13px',
-                                                    }}
-                                                >
-                                                    {level}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                    <span>Active Alert Zones</span>
+                                    <strong>{zones.length}</strong>
                                 </div>
-
+                            </div>
+                            <div className="admin-status-card warning">
+                                <Activity size={18} />
                                 <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', fontSize: '13px' }}>Alert Title (optional)</label>
-                                    <input
-                                        type="text"
-                                        value={form.title}
-                                        onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                                        placeholder={`${form.riskLevel} Flood Alert - ${form.zone || 'Zone'}`}
-                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #e5e7eb', fontSize: '14px', boxSizing: 'border-box' }}
-                                    />
+                                    <span>Recent Dispatches</span>
+                                    <strong>{stats?.recent?.length || 0}</strong>
                                 </div>
+                            </div>
+                        </div>
 
-                                <div>
-                                    <label style={{ display: 'block', fontWeight: 600, marginBottom: '6px', fontSize: '13px' }}>
-                                        Custom Message <span style={{ fontWeight: 400, color: '#9ca3af' }}>(leave blank for auto-generated)</span>
-                                    </label>
-                                    <textarea
-                                        value={form.customMessage}
-                                        onChange={e => setForm(f => ({ ...f, customMessage: e.target.value }))}
-                                        rows={3}
-                                        placeholder="Auto-generated based on risk level and zone..."
-                                        style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1.5px solid #e5e7eb', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box' }}
-                                    />
+                        <div className="stats-grid sms-stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Total Logs</h3>
+                                    <p className="stat-number">{stats?.total || 0}</p>
                                 </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Sent</h3>
+                                    <p className="stat-number success-number">{statusCount('SENT')}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Simulated</h3>
+                                    <p className="stat-number info-number">{statusCount('SIMULATED')}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Failed</h3>
+                                    <p className="stat-number danger-number">{statusCount('FAILED')}</p>
+                                </div>
+                            </div>
+                        </div>
 
-                                {form.zone && (
-                                    <div style={{ background: '#f8fafc', border: '1.5px solid #e5e7eb', borderRadius: '8px', padding: '12px 14px' }}>
-                                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', marginBottom: '4px', textTransform: 'uppercase' }}>Message Preview</p>
-                                        <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>
-                                            {form.customMessage || ({
-                                                Critical: `FLOOD ALERT - CRITICAL: Severe flooding imminent in ${form.zone}. EVACUATE IMMEDIATELY. Avoid all water bodies. Call DMC: 117.`,
-                                                High:     `FLOOD WARNING - HIGH RISK: Significant flooding expected in ${form.zone}. Move valuables upstairs. Stay alert. DMC: 117.`,
-                                                Moderate: `FLOOD ADVISORY - MODERATE: Elevated flood risk in ${form.zone}. Monitor river levels. Avoid low-lying areas. DMC: 117.`,
-                                                Low:      `FLOOD WATCH - LOW RISK: Minor flooding possible in ${form.zone}. Stay informed and avoid unnecessary travel near waterways.`,
-                                            }[form.riskLevel] || '')}
-                                        </p>
-                                    </div>
-                                )}
-
+                        <div className="admin-tabs">
+                            {[
+                                ['dispatch', Send, 'Dispatch Alert'],
+                                ['history', Clock, 'History'],
+                                ['stats', BarChart2, 'Analytics'],
+                            ].map(([key, Icon, label]) => (
                                 <button
-                                    type="submit"
-                                    disabled={dispatching}
-                                    style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                        padding: '12px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                                        background: dispatching ? '#9ca3af' : '#111', color: '#fff',
-                                        fontWeight: 700, fontSize: '14px',
-                                    }}
+                                    key={key}
+                                    onClick={() => setTab(key)}
+                                    className={`admin-tab ${tab === key ? 'active' : ''}`}
                                 >
-                                    <Send size={16} />
-                                    {dispatching ? 'Dispatching...' : 'Send Alert Now'}
+                                    <Icon size={16} />
+                                    {label}
                                 </button>
-                            </form>
-
-                            {result && (
-                                <div style={{
-                                    marginTop: '16px', padding: '14px 16px', borderRadius: '8px',
-                                    background: result.success ? '#f0fdf4' : '#fef2f2',
-                                    border: `1.5px solid ${result.success ? '#86efac' : '#fca5a5'}`,
-                                }}>
-                                    <p style={{ margin: 0, fontWeight: 700, color: result.success ? '#15803d' : '#dc2626', fontSize: '14px' }}>
-                                        {result.success ? 'Alert Dispatched' : 'Dispatch Failed'}
-                                    </p>
-                                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#374151' }}>{result.message}</p>
-                                    {result.results && (
-                                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#6b7280' }}>
-                                            Sent: {result.results.sent} | Simulated: {result.results.simulated} | Failed: {result.results.failed} | Total: {result.results.total}
-                                            {!result.twilioActive && <span style={{ color: '#2563eb' }}> (simulation mode - no Twilio credentials)</span>}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
+                            ))}
                         </div>
-                    </div>
-                )}
 
-                {/* History Tab */}
-                {tab === 'history' && (
-                    <div className="dashboard-section">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                            <h2>Alert History ({logTotal} total)</h2>
-                            <button onClick={() => loadLogs(1)} style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', fontSize: '13px' }}>
-                                Refresh
-                            </button>
-                        </div>
-                        {logs.length === 0 ? (
-                            <p style={{ color: '#9ca3af' }}>No alerts sent yet.</p>
-                        ) : (
-                            <>
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-                                        <thead>
-                                            <tr style={{ borderBottom: '2px solid #f3f4f6' }}>
-                                                {['Phone', 'Zone', 'Risk', 'Status', 'Title', 'Sent At'].map(h => (
-                                                    <th key={h} style={{ textAlign: 'left', padding: '8px 12px', fontWeight: 600, color: '#6b7280', fontSize: '12px', textTransform: 'uppercase' }}>{h}</th>
+                        {tab === 'dispatch' && (
+                            <div className="alert-compose-layout">
+                                <section className="dashboard-section admin-panel compose-panel">
+                                    <div className="panel-heading">
+                                        <div>
+                                            <span className="admin-kicker">Manual Dispatch</span>
+                                            <h2>Compose Alert</h2>
+                                        </div>
+                                        <MessageSquareText size={22} />
+                                    </div>
+
+                                    <form onSubmit={handleDispatch} className="alert-form">
+                                        <div className="form-group">
+                                            <label>Target Zone *</label>
+                                            <select
+                                                value={form.zone}
+                                                onChange={(e) => setForm((current) => ({ ...current, zone: e.target.value }))}
+                                                required
+                                            >
+                                                <option value="">Select zone</option>
+                                                <option value="ALL">All zones broadcast</option>
+                                                {zones.map((zoneName) => (
+                                                    <option key={zoneName} value={zoneName}>{zoneName}</option>
                                                 ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {logs.map((log, i) => (
-                                                <tr key={log._id || i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                                                    <td style={{ padding: '10px 12px', fontFamily: 'monospace' }}>{log.phoneNumber}</td>
-                                                    <td style={{ padding: '10px 12px' }}>{log.zone || '-'}</td>
-                                                    <td style={{ padding: '10px 12px' }}>
-                                                        {log.riskLevel ? (
-                                                            <span style={{ ...riskStyle(log.riskLevel), padding: '2px 10px', borderRadius: '9999px', fontSize: '11px', fontWeight: 700 }}>
-                                                                {log.riskLevel}
-                                                            </span>
-                                                        ) : '-'}
-                                                    </td>
-                                                    <td style={{ padding: '10px 12px' }}>
-                                                        <span style={{ color: STATUS_COLORS[log.status], fontWeight: 600, fontSize: '12px' }}>{log.status}</span>
-                                                    </td>
-                                                    <td style={{ padding: '10px 12px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{log.alertTitle || '-'}</td>
-                                                    <td style={{ padding: '10px 12px', color: '#6b7280' }}>{new Date(log.sentAt).toLocaleString()}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {logPages > 1 && (
-                                    <div style={{ display: 'flex', gap: '6px', marginTop: '16px', justifyContent: 'center' }}>
-                                        {Array.from({ length: logPages }, (_, i) => i + 1).map(p => (
-                                            <button key={p} onClick={() => loadLogs(p)} style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', cursor: 'pointer', background: p === logPage ? '#111' : '#fff', color: p === logPage ? '#fff' : '#374151', fontSize: '13px' }}>{p}</button>
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>Risk Level *</label>
+                                            <div className="risk-button-grid">
+                                                {RISK_LEVELS.map((level) => (
+                                                    <button
+                                                        type="button"
+                                                        key={level}
+                                                        onClick={() => setForm((current) => ({ ...current, riskLevel: level }))}
+                                                        className={`risk-button ${riskClass(level)} ${form.riskLevel === level ? 'selected' : ''}`}
+                                                    >
+                                                        {level}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>Alert Title</label>
+                                            <input
+                                                type="text"
+                                                value={form.title}
+                                                onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))}
+                                                placeholder={`${form.riskLevel} Flood Alert - ${form.zone || 'Zone'}`}
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label>
+                                                Custom Message
+                                                <span> leave blank to use the safe template</span>
+                                            </label>
+                                            <textarea
+                                                value={form.customMessage}
+                                                onChange={(e) => setForm((current) => ({ ...current, customMessage: e.target.value }))}
+                                                rows={4}
+                                                placeholder="Auto-generated based on risk level and target zone."
+                                            />
+                                        </div>
+
+                                        <div className={`message-preview ${riskClass(form.riskLevel)}`}>
+                                            <div className="preview-header">
+                                                <span>SMS Preview</span>
+                                                <span>{previewMessage.length} chars / {messageSegments} SMS</span>
+                                            </div>
+                                            <p>{previewMessage}</p>
+                                        </div>
+
+                                        <button type="submit" disabled={dispatching} className="admin-primary-button full-width">
+                                            <Send size={17} />
+                                            {dispatching ? 'Dispatching...' : 'Send Alert Now'}
+                                        </button>
+                                    </form>
+
+                                    {result && (
+                                        <div className={`dispatch-result ${result.success ? 'success' : 'failed'}`}>
+                                            {result.success ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                                            <div>
+                                                <strong>{result.success ? 'Dispatch Completed' : 'Dispatch Failed'}</strong>
+                                                <p>{result.message}</p>
+                                                {result.results && (
+                                                    <span>
+                                                        Sent {result.results.sent} / Simulated {result.results.simulated} / Failed {result.results.failed} / Total {result.results.total}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </section>
+
+                                <section className="dashboard-section admin-panel guidance-panel">
+                                    <div className={`risk-guidance-card ${riskClass(form.riskLevel)}`}>
+                                        <ShieldAlert size={24} />
+                                        <div>
+                                            <span>{form.riskLevel} protocol</span>
+                                            <h3>{selectedGuidance.title}</h3>
+                                            <p>{selectedGuidance.action}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="readiness-list">
+                                        {selectedGuidance.checklist.map((item) => (
+                                            <div key={item}>
+                                                <CheckCircle2 size={16} />
+                                                <span>{item}</span>
+                                            </div>
                                         ))}
                                     </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                )}
 
-                {/* Stats Tab */}
-                {tab === 'stats' && stats && (
-                    <div className="dashboard-sections">
-                        <div className="dashboard-section">
-                            <h2>Alerts by Zone</h2>
-                            <div className="zone-list" style={{ marginTop: '12px' }}>
-                                {stats.byZone?.length ? stats.byZone.map(z => (
-                                    <div key={z._id} className="zone-item">
-                                        <span className="zone-name">{z._id}</span>
-                                        <span className="zone-count">{z.count} alerts</span>
-                                    </div>
-                                )) : <p style={{ color: '#9ca3af' }}>No data yet.</p>}
-                            </div>
-                        </div>
-                        <div className="dashboard-section">
-                            <h2>Alerts by Risk Level</h2>
-                            <div className="zone-list" style={{ marginTop: '12px' }}>
-                                {stats.byRisk?.length ? stats.byRisk.map(r => {
-                                    const s = riskStyle(r._id);
-                                    return (
-                                        <div key={r._id} className="zone-item">
-                                            <span style={{ ...s, padding: '2px 12px', borderRadius: '9999px', fontSize: '12px', fontWeight: 700 }}>{r._id}</span>
-                                            <span className="zone-count">{r.count} alerts</span>
+                                    <div className="quick-zone-picker">
+                                        <div className="section-mini-heading">
+                                            <span>Quick Zone Pick</span>
+                                            <p>Choose one of the active registered zones.</p>
                                         </div>
-                                    );
-                                }) : <p style={{ color: '#9ca3af' }}>No data yet.</p>}
+                                        <div className="quick-zone-grid">
+                                            {zones.slice(0, 8).map((zoneName) => (
+                                                <button
+                                                    type="button"
+                                                    key={zoneName}
+                                                    onClick={() => setForm((current) => ({ ...current, zone: zoneName }))}
+                                                    className={form.zone === zoneName ? 'selected' : ''}
+                                                >
+                                                    {zoneName}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </section>
                             </div>
-                        </div>
-                    </div>
+                        )}
+
+                        {tab === 'history' && (
+                            <section className="dashboard-section admin-panel">
+                                <div className="panel-heading">
+                                    <div>
+                                        <span className="admin-kicker">Audit Trail</span>
+                                        <h2>Alert History ({logTotal} total)</h2>
+                                    </div>
+                                    <button onClick={() => loadLogs(1)} className="admin-secondary-button">
+                                        <RefreshCw size={16} />
+                                        Refresh
+                                    </button>
+                                </div>
+
+                                <div className="history-toolbar">
+                                    <select
+                                        value={historyFilters.zone}
+                                        onChange={(e) => setHistoryFilters((current) => ({ ...current, zone: e.target.value }))}
+                                    >
+                                        <option value="">All Zones</option>
+                                        {zones.map((zoneName) => (
+                                            <option key={zoneName} value={zoneName}>{zoneName}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={historyFilters.status}
+                                        onChange={(e) => setHistoryFilters((current) => ({ ...current, status: e.target.value }))}
+                                    >
+                                        <option value="">All Statuses</option>
+                                        {STATUS_LEVELS.map((status) => (
+                                            <option key={status} value={status}>{status}</option>
+                                        ))}
+                                    </select>
+                                    <button onClick={() => loadLogs(1, historyFilters)} className="admin-primary-button compact">Apply</button>
+                                    <button
+                                        onClick={() => {
+                                            const emptyFilters = { zone: '', status: '' };
+                                            setHistoryFilters(emptyFilters);
+                                            loadLogs(1, emptyFilters);
+                                        }}
+                                        className="admin-secondary-button"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+
+                                {logs.length === 0 ? (
+                                    <p className="muted-copy">No alerts match the selected filters.</p>
+                                ) : (
+                                    <>
+                                        <div className="admin-table-wrap">
+                                            <table className="admin-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Phone</th>
+                                                        <th>Zone</th>
+                                                        <th>Risk</th>
+                                                        <th>Status</th>
+                                                        <th>Title</th>
+                                                        <th>Sent At</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {logs.map((log, index) => (
+                                                        <tr key={log._id || index}>
+                                                            <td className="mono-cell">{log.phoneNumber}</td>
+                                                            <td>{log.zone || '-'}</td>
+                                                            <td>
+                                                                {log.riskLevel ? (
+                                                                    <span className={`risk-badge ${riskClass(log.riskLevel)}`}>{log.riskLevel}</span>
+                                                                ) : '-'}
+                                                            </td>
+                                                            <td>
+                                                                <span className={`status-pill ${statusClass(log.status)}`}>{log.status}</span>
+                                                            </td>
+                                                            <td className="truncate-cell">{log.alertTitle || '-'}</td>
+                                                            <td>{formatDateTime(log.sentAt)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {logPages > 1 && (
+                                            <div className="pagination">
+                                                <span>Page {logPage} of {logPages}</span>
+                                                <div className="pagination-buttons">
+                                                    <button
+                                                        onClick={() => loadLogs(logPage - 1)}
+                                                        disabled={logPage === 1}
+                                                    >
+                                                        Previous
+                                                    </button>
+                                                    <button
+                                                        onClick={() => loadLogs(logPage + 1)}
+                                                        disabled={logPage === logPages}
+                                                    >
+                                                        Next
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </section>
+                        )}
+
+                        {tab === 'stats' && stats && (
+                            <div className="dashboard-sections">
+                                <section className="dashboard-section admin-panel">
+                                    <h2>Alerts by Zone</h2>
+                                    <div className="analytics-list">
+                                        {stats.byZone?.length ? stats.byZone.map((zoneStat) => (
+                                            <div key={zoneStat._id} className="analytics-row">
+                                                <div className="analytics-row-label">
+                                                    <span>{zoneStat._id}</span>
+                                                    <strong>{zoneStat.count} alerts</strong>
+                                                </div>
+                                                <div className="analytics-bar">
+                                                    <span style={{ width: `${Math.max(8, (zoneStat.count / maxZoneAlerts) * 100)}%` }} />
+                                                </div>
+                                            </div>
+                                        )) : <p className="muted-copy">No zone analytics yet.</p>}
+                                    </div>
+                                </section>
+
+                                <section className="dashboard-section admin-panel">
+                                    <h2>Alerts by Risk Level</h2>
+                                    <div className="analytics-list">
+                                        {sortedRiskStats.length ? sortedRiskStats.map((riskStat) => (
+                                            <div key={riskStat._id} className="analytics-row">
+                                                <div className="analytics-row-label">
+                                                    <span className={`risk-badge ${riskClass(riskStat._id)}`}>{riskStat._id}</span>
+                                                    <strong>{riskStat.count} alerts</strong>
+                                                </div>
+                                                <div className={`analytics-bar ${riskClass(riskStat._id)}`}>
+                                                    <span style={{ width: `${Math.max(8, (riskStat.count / maxRiskAlerts) * 100)}%` }} />
+                                                </div>
+                                            </div>
+                                        )) : <p className="muted-copy">No risk analytics yet.</p>}
+                                    </div>
+                                </section>
+
+                                <section className="dashboard-section admin-panel">
+                                    <h2>Recent Dispatches</h2>
+                                    <div className="recent-list">
+                                        {stats.recent?.length ? stats.recent.map((item) => (
+                                            <div key={item._id} className="recent-item">
+                                                <AlertTriangle size={17} />
+                                                <div>
+                                                    <strong>{item.alertTitle || `${item.riskLevel || 'Flood'} Alert`}</strong>
+                                                    <span>{item.zone || 'Unknown zone'} - {formatDateTime(item.sentAt)}</span>
+                                                </div>
+                                                <span className={`status-pill ${statusClass(item.status)}`}>{item.status}</span>
+                                            </div>
+                                        )) : <p className="muted-copy">No recent dispatches yet.</p>}
+                                    </div>
+                                </section>
+                            </div>
+                        )}
+                    </>
                 )}
             </main>
         </div>

@@ -47,10 +47,10 @@ const Navbar = () => {
         <div className={`emergency-ribbon risk-${(floodRisk || 'unknown').toLowerCase()}`}>
             <div className="emergency-ribbon-content">
                 <span>{getLiveWarningMessage()}</span>
-                <span>🚑 1990 – Suwa Seriya</span>
-                <span>🚓 Police Emergency: 119</span>
-                <span>🏥 National Hospital Colombo: 011 2691111</span>
-                <span>🆘 Disaster Management Centre: 117</span>
+                <span>Ambulance: 1990</span>
+                <span>Police Emergency: 119</span>
+                <span>National Hospital Colombo: 011 2691111</span>
+                <span>Disaster Management Centre: 117</span>
             </div>
         </div>
         <nav className="navbar">

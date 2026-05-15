@@ -119,6 +119,104 @@
 }
 .auth-footer a:hover { opacity: .75; }
 
+/* forgot password button styled like a link */
+.forgot-password {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.forgot-password:hover { opacity: .75; }
+
+/* ─── Password show/hide ──────────────── */
+.password-field-wrap {
+  position: relative;
+}
+.password-field-wrap input {
+  padding-right: 2.8rem;
+}
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+.password-toggle-btn:hover { color: var(--color-text-primary); }
+
+/* ─── Forgot Password Modal ──────────── */
+.fp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.fp-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem 2rem 1.5rem;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+.fp-modal-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.75rem;
+}
+.fp-modal h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #111;
+}
+.fp-modal p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+.fp-email-link {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 0.45rem 1rem;
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+}
+.fp-email-link:hover { background: #e5e7eb; }
+.fp-close-btn {
+  display: block;
+  width: 100%;
+  padding: 0.65rem;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.fp-close-btn:hover { opacity: 0.85; }
+
 /* ─── Messages ────────────────────── */
 .error-message {
   background: #fef2f2;

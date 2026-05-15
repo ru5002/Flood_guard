@@ -5,6 +5,16 @@ import '../styles/auth.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+const EyeIcon = ({ open }) => open ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+);
+
 const Login = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -13,6 +23,8 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showForgotModal, setShowForgotModal] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -101,15 +113,23 @@ const Login = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="form-group password-field-wrap">
                             <input
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 name="password"
                                 placeholder="Password"
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
                             />
+                            <button
+                                type="button"
+                                className="password-toggle-btn"
+                                onClick={() => setShowPassword(v => !v)}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                <EyeIcon open={showPassword} />
+                            </button>
                         </div>
                         <button type="submit" className="auth-btn" disabled={loading}>
                             {loading ? 'Logging in...' : 'Log In'}
@@ -119,9 +139,32 @@ const Login = () => {
                         <label className="remember-me">
                             <input type="checkbox" /> Remember me for 30 days
                         </label>
-                        <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+                        <button
+                            type="button"
+                            className="forgot-password"
+                            onClick={() => setShowForgotModal(true)}
+                        >
+                            Forgot Password?
+                        </button>
                         <p>You do not have account yet? <Link to="/register" className="sign-up-link">Sign up</Link></p>
                     </div>
+
+                    {/* Forgot Password Modal */}
+                    {showForgotModal && (
+                        <div className="fp-modal-backdrop" onClick={() => setShowForgotModal(false)}>
+                            <div className="fp-modal" onClick={e => e.stopPropagation()}>
+                                <div className="fp-modal-icon">🔑</div>
+                                <h3>Forgot Your Password?</h3>
+                                <p>Contact your administrator to reset your password:</p>
+                                <a href="mailto:admin@floodguard.lk" className="fp-email-link">
+                                    admin@floodguard.lk
+                                </a>
+                                <button className="fp-close-btn" onClick={() => setShowForgotModal(false)}>
+                                    Got it
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="auth-image-section">
                     <div className="auth-image-overlay"></div>

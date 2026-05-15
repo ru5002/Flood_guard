@@ -1,7 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, Home } from 'lucide-react';
+import {
+    LayoutDashboard,
+    Users,
+    Bell,
+    Home,
+    UserPlus,
+    Pencil,
+    Lock,
+    Unlock,
+    Trash2,
+    X,
+    Search,
+} from 'lucide-react';
 import '../../styles/admin.css';
+
+const PAGE_SIZE = 20;
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -13,7 +27,6 @@ const UserManagement = () => {
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
     const [showAddModal, setShowAddModal] = useState(false);
     const [editUser, setEditUser] = useState(null);
-    const [admin, setAdmin] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,7 +35,6 @@ const UserManagement = () => {
             navigate('/admin/login');
             return;
         }
-        setAdmin(JSON.parse(adminData));
         fetchUsers();
         fetchZones();
     }, [navigate, search, zone, status, pagination.page]);
@@ -32,14 +44,14 @@ const UserManagement = () => {
             const token = localStorage.getItem('adminToken');
             const params = new URLSearchParams({
                 page: pagination.page,
-                limit: 20,
+                limit: PAGE_SIZE,
                 ...(search && { search }),
                 ...(zone && { zone }),
-                ...(status && { status })
+                ...(status && { status }),
             });
 
             const response = await fetch(`/api/admin/users?${params}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             });
 
             if (!response.ok) {
@@ -64,7 +76,7 @@ const UserManagement = () => {
         try {
             const token = localStorage.getItem('adminToken');
             const response = await fetch('/api/admin/users/zones', {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
             setZones(data);
@@ -82,7 +94,7 @@ const UserManagement = () => {
             const token = localStorage.getItem('adminToken');
             const response = await fetch(`/api/admin/users/${userId}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             });
 
             if (response.ok) {
@@ -101,10 +113,10 @@ const UserManagement = () => {
             const response = await fetch(`/api/admin/users/${userId}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ isActive: !currentStatus })
+                body: JSON.stringify({ isActive: !currentStatus }),
             });
 
             if (response.ok) {
@@ -121,6 +133,9 @@ const UserManagement = () => {
         navigate('/admin/login');
     };
 
+    const firstItem = pagination.total ? ((pagination.page - 1) * PAGE_SIZE) + 1 : 0;
+    const lastItem = Math.min(pagination.page * PAGE_SIZE, pagination.total);
+
     return (
         <div className="admin-container">
             <aside className="admin-sidebar">
@@ -128,15 +143,15 @@ const UserManagement = () => {
                     <h1>FLOODGUARD ADMIN</h1>
                 </div>
                 <nav className="admin-nav">
-                    <NavLink to="/admin/dashboard" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                    <NavLink to="/admin/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
                         <LayoutDashboard size={18} />
                         Dashboard
                     </NavLink>
-                    <NavLink to="/admin/users" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                    <NavLink to="/admin/users" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
                         <Users size={18} />
                         Users
                     </NavLink>
-                    <NavLink to="/admin/alerts" className={({isActive}) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                    <NavLink to="/admin/alerts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
                         <Bell size={18} />
                         SMS Alerts
                     </NavLink>
@@ -150,7 +165,9 @@ const UserManagement = () => {
             <main className="admin-main">
                 <div className="admin-header">
                     <div className="admin-header-left">
+                        <span className="admin-kicker">Registered Residents</span>
                         <h1>Users</h1>
+                        <p>Manage contact details, alert permissions, zones, and account access.</p>
                     </div>
                     <div className="admin-header-right">
                         <button onClick={handleLogout} className="btn-logout">Logout</button>
@@ -160,26 +177,37 @@ const UserManagement = () => {
                 <div className="admin-content">
                     <div className="users-header">
                         <div className="filters">
-                            <input
-                                type="text"
-                                placeholder="Search users..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="search-input"
-                            />
+                            <label className="admin-search-field">
+                                <Search size={17} />
+                                <input
+                                    type="text"
+                                    placeholder="Search users..."
+                                    value={search}
+                                    onChange={(e) => {
+                                        setSearch(e.target.value);
+                                        setPagination((prev) => ({ ...prev, page: 1 }));
+                                    }}
+                                />
+                            </label>
                             <select
                                 value={zone}
-                                onChange={(e) => setZone(e.target.value)}
+                                onChange={(e) => {
+                                    setZone(e.target.value);
+                                    setPagination((prev) => ({ ...prev, page: 1 }));
+                                }}
                                 className="filter-select"
                             >
                                 <option value="">All Zones</option>
-                                {zones.map(z => (
+                                {zones.map((z) => (
                                     <option key={z} value={z}>{z}</option>
                                 ))}
                             </select>
                             <select
                                 value={status}
-                                onChange={(e) => setStatus(e.target.value)}
+                                onChange={(e) => {
+                                    setStatus(e.target.value);
+                                    setPagination((prev) => ({ ...prev, page: 1 }));
+                                }}
                                 className="filter-select"
                             >
                                 <option value="">All Status</option>
@@ -187,11 +215,9 @@ const UserManagement = () => {
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
-                        <button 
-                            onClick={() => setShowAddModal(true)}
-                            className="btn-add-user"
-                        >
-                            + Add User
+                        <button onClick={() => setShowAddModal(true)} className="btn-add-user">
+                            <UserPlus size={17} />
+                            Add User
                         </button>
                     </div>
 
@@ -213,7 +239,7 @@ const UserManagement = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {users.map(user => (
+                                        {users.map((user) => (
                                             <tr key={user._id}>
                                                 <td>{user.name}</td>
                                                 <td>{user.email}</td>
@@ -231,22 +257,25 @@ const UserManagement = () => {
                                                             onClick={() => setEditUser(user)}
                                                             className="btn-edit"
                                                             title="Edit"
+                                                            aria-label={`Edit ${user.name}`}
                                                         >
-                                                            ✏️
+                                                            <Pencil size={15} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleToggleActive(user._id, user.isActive)}
                                                             className="btn-toggle"
                                                             title={user.isActive ? 'Deactivate' : 'Activate'}
+                                                            aria-label={user.isActive ? `Deactivate ${user.name}` : `Activate ${user.name}`}
                                                         >
-                                                            {user.isActive ? '🔒' : '🔓'}
+                                                            {user.isActive ? <Lock size={15} /> : <Unlock size={15} />}
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(user._id, user.name)}
                                                             className="btn-delete"
                                                             title="Delete"
+                                                            aria-label={`Delete ${user.name}`}
                                                         >
-                                                            🗑️
+                                                            <Trash2 size={15} />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -258,18 +287,18 @@ const UserManagement = () => {
 
                             <div className="pagination">
                                 <span>
-                                    Showing {((pagination.page - 1) * 20) + 1} to {Math.min(pagination.page * 20, pagination.total)} of {pagination.total} users
+                                    Showing {firstItem} to {lastItem} of {pagination.total} users
                                 </span>
                                 <div className="pagination-buttons">
                                     <button
-                                        onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+                                        onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
                                         disabled={pagination.page === 1}
                                     >
                                         Previous
                                     </button>
                                     <span>Page {pagination.page} of {pagination.pages}</span>
                                     <button
-                                        onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+                                        onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
                                         disabled={pagination.page === pagination.pages}
                                     >
                                         Next
@@ -316,7 +345,7 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
         zone: user?.zone || '',
         address: user?.address || '',
         isActive: user?.isActive ?? true,
-        alertsEnabled: user?.alertsEnabled ?? true
+        alertsEnabled: user?.alertsEnabled ?? true,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -331,7 +360,7 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
             const url = user
                 ? `/api/admin/users/${user._id}`
                 : '/api/admin/users';
-            
+
             const body = { ...formData };
             if (user && !formData.password) {
                 delete body.password;
@@ -340,10 +369,10 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
             const response = await fetch(url, {
                 method: user ? 'PUT' : 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
             });
 
             const data = await response.json();
@@ -366,9 +395,11 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{user ? 'Edit User' : 'Add New User'}</h2>
-                    <button onClick={onClose} className="modal-close">×</button>
+                    <button onClick={onClose} className="modal-close" aria-label="Close modal">
+                        <X size={18} />
+                    </button>
                 </div>
-                
+
                 <form onSubmit={handleSubmit} className="modal-form">
                     {error && <div className="error-message">{error}</div>}
 
@@ -424,7 +455,7 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
                                 required
                             >
                                 <option value="">Select Zone</option>
-                                {zones.map(z => (
+                                {zones.map((z) => (
                                     <option key={z} value={z}>{z}</option>
                                 ))}
                                 <option value="Other">Other</option>

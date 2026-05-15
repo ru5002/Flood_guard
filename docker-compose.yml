@@ -1,50 +1,29 @@
+# Backend uses MongoDB Atlas: set MONGO_URI in backend/.env (mongodb+srv://...)
+# Optional: override in repo-root .env. Twilio keys can stay in root .env.
+# Later env_file entries override earlier ones for duplicate keys.
 services:
-  mongo:
-    # Use 8.x if the named volume was ever used with MongoDB 8+ (FCV 8.2); mongo:7 will not start on that data.
-    image: mongo:8.2
-    container_name: floodguard-mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - floodguard_data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    networks:
-      - floodguard-network
-
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     container_name: floodguard-backend
     restart: unless-stopped
-    # Host 5000 is often taken (Windows/IIS, other dev servers); app UI still uses /api via nginx.
     ports:
       - "5001:5000"
+    env_file:
+      - .env
+      - backend/.env
     environment:
-      MONGO_URI: mongodb://mongo:27017/floodguard
+      # PORT / PYTHON_PATH are fixed for the image; MONGO_URI, JWT, API keys come from env_file (.env + backend/.env).
       PORT: 5000
-      JWT_SECRET: floodguard_secret_key_2026
-      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
-      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
-      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
-      TWILIO_FROM_NUMBER: ${TWILIO_FROM_NUMBER:-}
-      TWILIO_MESSAGING_SERVICE_SID: ${TWILIO_MESSAGING_SERVICE_SID:-}
       PYTHON_PATH: /opt/venv/bin/python
-    depends_on:
-      mongo:
-        condition: service_healthy
+      AUTO_ALERT_COOLDOWN_MINUTES: ${AUTO_ALERT_COOLDOWN_MINUTES:-360}
     healthcheck:
       test: ["CMD-SHELL", "node -e \"fetch('http://localhost:5000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 40s
     networks:
       - floodguard-network
 
@@ -59,9 +38,6 @@ services:
         condition: service_healthy
     networks:
       - floodguard-network
-
-volumes:
-  floodguard_data:
 
 networks:
   floodguard-network:

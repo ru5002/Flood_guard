@@ -11,6 +11,8 @@ WORKDIR /ml
 COPY ml/requirements.txt ./
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+ENV PIP_DEFAULT_TIMEOUT=300
+ENV PIP_RETRIES=10
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 COPY ml /ml

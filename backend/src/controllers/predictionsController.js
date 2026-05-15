@@ -1,8 +1,6 @@
 const Prediction = require("../models/Prediction");
-const User = require("../models/User");
 const WeatherData = require("../models/WeatherData");
 const RiverLevel = require("../models/RiverLevel");
-const { sendSMS } = require("../services/smsService");
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -11,6 +9,7 @@ const {
   fetchDunamaleIrrigationSnapshot,
   buildGampahaZonePredictions,
 } = require('../services/irrigationDataService');
+const { sendAutomaticRiskAlerts } = require('../services/automaticAlertService');
 
 const projectRoot = path.resolve(__dirname, '../../..');
 const localPython = process.platform === 'win32'
@@ -255,13 +254,14 @@ exports.generateLivePrediction = async (req, res) => {
         await newPrediction.save();
       }
 
-      // 7. Trigger Alerts if needed
-      if (["High", "Critical"].includes(result.day1.riskLevel) || ["High", "Critical"].includes(result.day2.riskLevel)) {
-        const users = isDatabaseReady() ? await User.find({ role: 'user', "notifications.sms": true }) : [];
-        users.forEach(u => {
-            if (u.phone) sendSMS(u.phone, `FLOOD ALERT: Elevated risk predicted for Gampaha over the next 2 days. Stay alert.`);
-        });
-      }
+      // 7. Trigger automatic zone SMS alerts for Moderate/High/Critical risk.
+      const automaticAlerts = isDatabaseReady()
+        ? await sendAutomaticRiskAlerts([{
+          location: 'Gampaha',
+          riskLevel: immediateRisk,
+          floodProbability: result.day1.probabilities?.[result.day1.riskLevel] || 0,
+        }], { source: 'live-prediction' })
+        : null;
 
       res.json({ 
         success: true, 
@@ -278,6 +278,7 @@ exports.generateLivePrediction = async (req, res) => {
         isLiveWeather,
         isLiveIrrigation,
         irrigationSnapshot,
+        automaticAlerts,
         generatedAt: new Date()
       });
     });
@@ -387,7 +388,7 @@ exports.getPredictionSummary = async (req, res) => {
 /**
  * POST /api/predictions (admin only)
  * Creates predictions in bulk.
- * NEW: triggers simulated SMS for High/Critical risk locations.
+ * Also triggers automatic SMS for Moderate/High/Critical risk locations.
  */
 exports.createPredictions = async (req, res) => {
   try {
@@ -405,38 +406,21 @@ exports.createPredictions = async (req, res) => {
     }));
 
     const inserted = await Prediction.insertMany(docs, { ordered: false });
-
-    // --- NEW: SMS trigger logic ---
-    // Send alerts only for High/Critical predictions
-    const alertLevels = new Set(["High", "Critical"]);
-
-    // unique locations that need alerting
-    const alertLocations = [...new Set(docs.filter((d) => alertLevels.has(d.riskLevel)).map((d) => d.location))];
-
-    let smsSentCount = 0;
-
-    // If your user schema has zone field (you do), send only to users in that zone/location
-    for (const loc of alertLocations) {
-      const users = await User.find({
-        alertsEnabled: true,
-        isActive: true,
-        zone: loc, // zone should match location string (e.g., "Gampaha")
-        phone: { $exists: true, $ne: "" },
-      }).lean();
-
-      const msg = `⚠ Flood risk ${docs.find((d) => d.location === loc)?.riskLevel?.toUpperCase()} in ${loc}. Please stay alert and follow safety guidance.`;
-
-      for (const u of users) {
-        await sendSMS(u.phone, msg);
-        smsSentCount++;
-      }
-    }
+    const automaticAlerts = await sendAutomaticRiskAlerts(docs, { source: 'admin-prediction-create' });
+    const smsSentCount = automaticAlerts.results.reduce((total, item) => {
+      if (!item.results) return total;
+      return total + item.results.sent + item.results.simulated;
+    }, 0);
+    const alertLocations = automaticAlerts.results
+      .filter((item) => item.sent)
+      .map((item) => item.zone);
 
     res.status(201).json({
       success: true,
       count: inserted.length,
       smsSentCount,
       alertLocations,
+      automaticAlerts,
       message: "Predictions saved and alerts processed",
     });
   } catch (err) {
@@ -452,6 +436,9 @@ exports.createPredictions = async (req, res) => {
 exports.getOfficialZonePredictions = async (req, res) => {
   try {
     const predictions = await buildGampahaZonePredictions();
+    const automaticAlerts = isDatabaseReady()
+      ? await sendAutomaticRiskAlerts(predictions, { source: 'official-zone-predictions' })
+      : null;
     res.json({
       success: true,
       source: 'Irrigation Department ArcGIS',
@@ -459,6 +446,7 @@ exports.getOfficialZonePredictions = async (req, res) => {
       count: predictions.length,
       generatedAt: new Date(),
       predictions,
+      automaticAlerts,
     });
   } catch (err) {
     console.error('getOfficialZonePredictions error:', err.message);

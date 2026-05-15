@@ -7,29 +7,129 @@
 
 /* ── Location Risk Banner ── */
 .location-risk-banner {
-  background: var(--bg-white, #ffffff);
+  background: #ffffff;
   border-bottom: 1px solid #e4e3df;
-  padding: 0.75rem var(--sp-10);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  padding: 0.5rem var(--sp-10);
   transition: all 0.3s ease;
 }
 
-.location-risk-banner.critical { background: #fee2e2; border-bottom: 2px solid #ef4444; color: #991b1b; }
-.location-risk-banner.high     { background: #ffedd5; border-bottom: 2px solid #f97316; color: #9a3412; }
-.location-risk-banner.moderate { background: #fef9c3; border-bottom: 2px solid #eab308; color: #854d0e; }
-.location-risk-banner.low      { background: #f0fdf4; border-bottom: 1px solid #bcf0da; color: #166534; }
-.location-risk-banner.none     { background: #f0fdf4; border-bottom: 1px solid #bcf0da; color: #166534; }
-.location-risk-banner.unknown  { background: #eff6ff; border-bottom: 1px solid #bfdbfe; color: #1d4ed8; }
+.location-risk-banner.critical {
+  background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 28%, #fee2e2 28%, #fee2e2 100%);
+  border-bottom: 2px solid #dc2626;
+  color: #7f1d1d;
+}
+
+.location-risk-banner.high {
+  background: linear-gradient(90deg, #9a3412 0%, #c2410c 28%, #ffedd5 28%, #ffedd5 100%);
+  border-bottom: 2px solid #f97316;
+  color: #7c2d12;
+}
+
+.location-risk-banner.moderate {
+  background: linear-gradient(90deg, #854d0e 0%, #a16207 28%, #fef9c3 28%, #fef9c3 100%);
+  border-bottom: 2px solid #eab308;
+  color: #713f12;
+}
+
+.location-risk-banner.low,
+.location-risk-banner.none {
+  background: linear-gradient(90deg, #166534 0%, #15803d 28%, #f0fdf4 28%, #f0fdf4 100%);
+  border-bottom: 1px solid #22c55e;
+  color: #14532d;
+}
+
+.location-risk-banner.unknown {
+  background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 28%, #eff6ff 28%, #eff6ff 100%);
+  border-bottom: 1px solid #60a5fa;
+  color: #1e3a8a;
+}
 
 .location-risk-banner .banner-content {
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
-.location-risk-banner .banner-icon { font-size: 1.25rem; }
-.location-risk-banner .banner-text { font-size: 0.95rem; font-weight: 500; }
+.location-risk-banner .banner-icon {
+  align-items: center;
+  background: rgba(255,255,255,0.94);
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  color: #991b1b;
+  display: inline-flex;
+  flex: 0 0 30px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.banner-copy {
+  background: rgba(255,255,255,0.84);
+  border: 1px solid rgba(255,255,255,0.72);
+  border-radius: 10px;
+  padding: 0.45rem 0.75rem;
+  width: min(820px, 100%);
+}
+
+.banner-topline {
+  align-items: center;
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 0.12rem;
+}
+
+.banner-kicker {
+  color: #6b7280;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.banner-severity {
+  background: currentColor;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.58rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  padding: 0.12rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.banner-copy h2 {
+  color: currentColor;
+  font-size: clamp(0.88rem, 1.4vw, 1rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 0.12rem;
+}
+
+.banner-copy p {
+  color: currentColor;
+  font-size: clamp(0.75rem, 1.1vw, 0.84rem);
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.banner-copy a {
+  color: currentColor;
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.banner-copy a:hover {
+  opacity: 0.82;
+}
 
 /* ── Shared pill buttons ─────────────────────── */
 .btn-dark {
