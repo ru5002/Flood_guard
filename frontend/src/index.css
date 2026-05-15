@@ -1,76 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:wght@400;500;600&display=swap');
+/* Base overrides – design tokens are defined in global.css */
 
-:root {
-  --primary-bg: #ffffff;
-  --secondary-bg: #f9f9f9;
-  --text-color: #1a1a1a;
-  --text-muted: #666666;
-  --heading-font: 'Lora', serif;
-  --body-font: 'Inter', sans-serif;
-  --border-color: #e5e5e5;
-  --button-bg: #1a1a1a;
-  --button-text: #ffffff;
-  --button-hover-bg: #333333;
-  
-  /* Remove old vars if not needed, or map them */
-  --bg-dark: #ffffff;
-  --bg-darker: #f5f5f5;
-  --bg-card: #ffffff;
-  --text-main: #1a1a1a;
-  --primary: #1a1a1a;
-  --primary-hover: #333333;
-  --gradient-bg: #ffffff; /* Override gradient with solid white */
-}
-
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--primary-bg);
-  color: var(--text-color);
-  font-family: var(--body-font);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--heading-font);
-  color: var(--text-color);
-  font-weight: 400;
   margin-top: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
 }
 
 button {
   cursor: pointer;
   border: none;
-  font-family: var(--body-font);
 }
 
-/* Scrollbar styling for a cleaner look */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #d1d1d1;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
+/* Global scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-/* Ensure map containers don't have weird borders */
-.leaflet-container {
-    background: #f0f0f0;
-}
+/* Leaflet map base */
+.leaflet-container { background: #f3f4f6; }
+

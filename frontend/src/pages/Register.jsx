@@ -1,8 +1,23 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import '../styles/auth.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
+const locationOptions = [
+    'Gampaha',
+    'Negombo',
+    'Minuwangoda',
+    'Wattala',
+    'Ja-Ela',
+    'Kelaniya',
+    'Ragama',
+    'Mirigama',
+    'Divulapitiya',
+    'Katunayake',
+    'Dunamale'
+];
 
 const Register = () => {
     const navigate = useNavigate();
@@ -11,7 +26,8 @@ const Register = () => {
         email: '',
         password: '',
         phone: '',
-        zone: '' // Zone is required by the backend schema
+        zone: '',
+        address: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -32,10 +48,11 @@ const Register = () => {
                 email: formData.email,
                 phone: formData.phone,
                 password: formData.password,
-                zone: formData.zone || 'Gampaha' // Default if not selected, or add a selector
+                zone: formData.zone,
+                address: formData.address
             };
             
-            const response = await axios.post('http://localhost:5000/api/users/register', payload);
+            const response = await axios.post('/api/users/register', payload);
             
             if (response.status === 201) {
                 console.log('User registered success:', response.data);
@@ -58,6 +75,7 @@ const Register = () => {
                     <p className="auth-subtitle">
                         Create an account to get real-time alerts to your mobile
                     </p>
+                    {error && <div className="error-message" style={{color: 'red', marginBottom: '10px', padding: '10px', background: '#fee2e2', borderRadius: '4px'}}>{error}</div>}
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <input
@@ -90,6 +108,28 @@ const Register = () => {
                             />
                         </div>
                         <div className="form-group">
+                            <select
+                                name="zone"
+                                value={formData.zone}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Select your location</option>
+                                {locationOptions.map((location) => (
+                                    <option key={location} value={location}>{location}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <textarea
+                                name="address"
+                                placeholder="Address or nearest landmark"
+                                value={formData.address}
+                                onChange={handleChange}
+                                rows="3"
+                            />
+                        </div>
+                        <div className="form-group">
                             <input
                                 type="password"
                                 name="password"
@@ -99,7 +139,9 @@ const Register = () => {
                                 required
                             />
                         </div>
-                        <button type="submit" className="auth-btn">Create Account</button>
+                        <button type="submit" className="auth-btn" disabled={loading}>
+                            {loading ? 'Creating Account...' : 'Create Account'}
+                        </button>
                         <div className="auth-footer">
                             <label>
                                 <input type="checkbox" /> Remember me for 30 days
@@ -113,6 +155,7 @@ const Register = () => {
                     <div className="placeholder-image"></div>
                 </div>
             </div>
+            <Footer />
         </div>
     );
 };

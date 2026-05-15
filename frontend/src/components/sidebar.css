@@ -1,21 +1,35 @@
+/* ─── Sidebar ────────────────────────────────────────────────── */
 .sidebar {
   width: 220px;
-  background: #f7f7f7;
-  padding: 24px 16px;
+  background: var(--color-surface);
+  padding: var(--sp-6) var(--sp-4);
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  border-right: 1px solid #e5e5e5;
+  gap: var(--sp-1);
+  border-right: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .side-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
   text-decoration: none;
-  color: #333;
-  padding: 10px;
-  border-radius: 6px;
+  color: var(--color-text-secondary);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
   font-weight: 500;
+  transition: background var(--transition), color var(--transition);
 }
 
 .side-link:hover {
-  background: #eaeaea;
+  background: var(--color-accent-light);
+  color: var(--color-text-primary);
 }
+
+.side-link.active {
+  background: var(--color-accent-light);
+  color: var(--color-text-primary);
+}
+

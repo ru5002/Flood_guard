@@ -67,3 +67,4 @@ jspm_packages/
 
 # Docker
 *.log
+.docker-config/

@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import '../styles/auth.css';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
+const EyeIcon = ({ open }) => open ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+);
 
 const Login = () => {
     const navigate = useNavigate();
@@ -12,6 +23,8 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showForgotModal, setShowForgotModal] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,16 +35,14 @@ const Login = () => {
         setLoading(true);
         setError('');
 
+        const email = formData.email.trim();
+
         try {
             // Logic to check if user is admin or regular user
             // 1. Try Admin Login
             try {
-                // Use relative path '/api' which Nginx proxies to backend
-                // OR use absolute URL if not behind Nginx (e.g. localhost:5000)
-                // For Docker setup with Nginx proxy, '/api' is preferred but hardcoded localhost:5000 works if exposed. 
-                // Let's stick to localhost:5000 as per previous setup, but add proper error catching
-                const adminResponse = await axios.post('http://localhost:5000/api/admin/auth/login', {
-                    email: formData.email,
+                const adminResponse = await axios.post('/api/admin/auth/login', {
+                    email,
                     password: formData.password
                 });
                 
@@ -54,23 +65,26 @@ const Login = () => {
 
             // 2. Try User Login (Regular User)
             try {
-                const userResponse = await axios.post('http://localhost:5000/api/users/login', {
-                    email: formData.email,
+                const userResponse = await axios.post('/api/users/login', {
+                    email,
                     password: formData.password
                 });
 
                 if (userResponse.status === 200) {
                      // User Login Success
                     console.log('User login success', userResponse.data);
+                    localStorage.setItem('userToken', userResponse.data.token);
                     localStorage.setItem('userData', JSON.stringify(userResponse.data.user));
-                    // Redirect to Map or Home
-                    navigate('/map');
+                    // Redirect to Home page instead of Map
+                    navigate('/');
                     return;
                 }
             } catch (userError) {
                 // Both Admin and User login failed
-                console.error("User login error:", userError);
-                setError('Invalid email or password.');
+                console.error("User login error:", userError.response?.data || userError.message);
+                const d = userError.response?.data;
+                const backendMsg = d?.message || d?.error;
+                setError(backendMsg || 'Invalid email or password.');
             }
 
         } catch (err) {
@@ -99,15 +113,23 @@ const Login = () => {
                                 required
                             />
                         </div>
-                        <div className="form-group">
+                        <div className="form-group password-field-wrap">
                             <input
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 name="password"
                                 placeholder="Password"
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
                             />
+                            <button
+                                type="button"
+                                className="password-toggle-btn"
+                                onClick={() => setShowPassword(v => !v)}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                <EyeIcon open={showPassword} />
+                            </button>
                         </div>
                         <button type="submit" className="auth-btn" disabled={loading}>
                             {loading ? 'Logging in...' : 'Log In'}
@@ -117,14 +139,38 @@ const Login = () => {
                         <label className="remember-me">
                             <input type="checkbox" /> Remember me for 30 days
                         </label>
-                        <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+                        <button
+                            type="button"
+                            className="forgot-password"
+                            onClick={() => setShowForgotModal(true)}
+                        >
+                            Forgot Password?
+                        </button>
                         <p>You do not have account yet? <Link to="/register" className="sign-up-link">Sign up</Link></p>
                     </div>
+
+                    {/* Forgot Password Modal */}
+                    {showForgotModal && (
+                        <div className="fp-modal-backdrop" onClick={() => setShowForgotModal(false)}>
+                            <div className="fp-modal" onClick={e => e.stopPropagation()}>
+                                <div className="fp-modal-icon">🔑</div>
+                                <h3>Forgot Your Password?</h3>
+                                <p>Contact your administrator to reset your password:</p>
+                                <a href="mailto:admin@floodguard.lk" className="fp-email-link">
+                                    admin@floodguard.lk
+                                </a>
+                                <button className="fp-close-btn" onClick={() => setShowForgotModal(false)}>
+                                    Got it
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="auth-image-section">
                     <div className="auth-image-overlay"></div>
                 </div>
             </div>
+            <Footer />
         </div>
     );
 };

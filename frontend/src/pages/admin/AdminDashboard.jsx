@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Home } from 'lucide-react';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
+import { LayoutDashboard, Users, Bell, Home, Megaphone, RefreshCw, UserCog, CheckCircle2, MessageCircle, UserRoundPlus } from 'lucide-react';
 import '../../styles/admin.css';
 
 const AdminDashboard = () => {
@@ -22,10 +22,10 @@ const AdminDashboard = () => {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('adminToken');
-            const response = await fetch('http://localhost:5000/api/admin/users/stats', {
+            const response = await fetch('/api/admin/users/stats', {
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             });
 
             if (!response.ok) {
@@ -68,88 +68,110 @@ const AdminDashboard = () => {
                     <h1>FLOODGUARD ADMIN</h1>
                 </div>
                 <nav className="admin-nav">
-                    <Link to="/admin/dashboard" className="admin-nav-link active">
-                        <LayoutDashboard size={20} />
+                    <NavLink to="/admin/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <LayoutDashboard size={18} />
                         Dashboard
-                    </Link>
-                    <Link to="/admin/users" className="admin-nav-link">
-                        <Users size={20} />
+                    </NavLink>
+                    <NavLink to="/admin/users" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <Users size={18} />
                         Users
-                    </Link>
+                    </NavLink>
+                    <NavLink to="/admin/alerts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+                        <Bell size={18} />
+                        SMS Alerts
+                    </NavLink>
                     <Link to="/" className="admin-nav-link">
-                        <Home size={20} />
+                        <Home size={18} />
                         Back to Site
                     </Link>
                 </nav>
             </aside>
 
-            <main className="admin-main">
-                <div className="admin-header">
-                    <div className="admin-header-left">
+            <main className="admin-main admin-dashboard-page">
+                <div className="dashboard-hero">
+                    <div>
+                        <span className="admin-kicker">Admin Overview</span>
                         <h1>Dashboard</h1>
+                        <p>Welcome back, {admin?.name || 'Admin'}. Review users, alert coverage, and recent activity.</p>
                     </div>
-                    <div className="admin-header-right">
+                    <div className="dashboard-hero-actions">
+                        <button onClick={fetchStats} className="admin-secondary-button">
+                            <RefreshCw size={16} />
+                            Refresh
+                        </button>
                         <button onClick={handleLogout} className="btn-logout">Logout</button>
                     </div>
                 </div>
 
                 <div className="admin-content">
-                    <div className="stats-grid">
-                        <div className="stat-card">
-                            <div className="stat-info">
-                                <h3>Total Users</h3>
-                                <p className="stat-number">{stats?.totalUsers || 0}</p>
-                            </div>
+                    <div className="dashboard-metrics">
+                        <div className="dashboard-metric-card">
+                            <Users size={20} />
+                            <span>Total Users</span>
+                            <strong>{stats?.totalUsers || 0}</strong>
                         </div>
 
-                        <div className="stat-card">
-                            <div className="stat-info">
-                                <h3>Active Users</h3>
-                                <p className="stat-number">{stats?.activeUsers || 0}</p>
-                            </div>
+                        <div className="dashboard-metric-card">
+                            <CheckCircle2 size={20} />
+                            <span>Active Users</span>
+                            <strong>{stats?.activeUsers || 0}</strong>
                         </div>
 
-                        <div className="stat-card">
-                            <div className="stat-info">
-                                <h3>Alerts Enabled</h3>
-                                <p className="stat-number">{stats?.alertsEnabledCount || 0}</p>
-                            </div>
+                        <div className="dashboard-metric-card">
+                            <MessageCircle size={20} />
+                            <span>Alerts Enabled</span>
+                            <strong>{stats?.alertsEnabledCount || 0}</strong>
                         </div>
 
-                        <div className="stat-card">
-                            <div className="stat-info">
-                                <h3>New (30 days)</h3>
-                                <p className="stat-number">{stats?.recentRegistrations || 0}</p>
-                            </div>
+                        <div className="dashboard-metric-card">
+                            <UserRoundPlus size={20} />
+                            <span>New 30 Days</span>
+                            <strong>{stats?.recentRegistrations || 0}</strong>
                         </div>
                     </div>
 
-                    <div className="dashboard-sections">
-                        <div className="dashboard-section">
-                            <h2>Users by Zone</h2>
+                    <div className="dashboard-clean-grid">
+                        <section className="dashboard-clean-panel dashboard-zone-panel">
+                            <div className="dashboard-panel-title">
+                                <div>
+                                    <h2>Users by Zone</h2>
+                                    <p>Registered residents grouped by saved location.</p>
+                                </div>
+                            </div>
                             <div className="zone-list">
-                                {stats?.usersByZone?.map((zone) => (
+                                {stats?.usersByZone?.length ? stats.usersByZone.map((zone) => (
                                     <div key={zone._id} className="zone-item">
                                         <span className="zone-name">{zone._id}</span>
                                         <span className="zone-count">{zone.count} users</span>
                                     </div>
-                                ))}
+                                )) : (
+                                    <p className="muted-copy">No zone data available yet.</p>
+                                )}
                             </div>
-                        </div>
+                        </section>
 
-                        <div className="dashboard-section">
-                            <h2>Quick Actions</h2>
+                        <section className="dashboard-clean-panel dashboard-actions-panel">
+                            <div className="dashboard-panel-title">
+                                <div>
+                                    <h2>Quick Actions</h2>
+                                    <p>Common admin tasks.</p>
+                                </div>
+                            </div>
                             <div className="quick-actions">
                                 <Link to="/admin/users" className="action-btn">
-                                    <span>👥</span>
+                                    <UserCog size={18} />
                                     Manage Users
                                 </Link>
+                                <Link to="/admin/alerts" className="action-btn">
+                                    <Megaphone size={18} />
+                                    Send SMS Alert
+                                </Link>
                                 <button className="action-btn" onClick={fetchStats}>
-                                    <span>🔄</span>
+                                    <RefreshCw size={18} />
                                     Refresh Stats
                                 </button>
                             </div>
-                        </div>
+                        </section>
                     </div>
                 </div>
             </main>

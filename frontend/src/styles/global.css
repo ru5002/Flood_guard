@@ -1,51 +1,198 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Lora:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital@1&display=swap');
 
+/* ─── Design Tokens ────────────────────────────────────────────── */
 :root {
-  --primary-bg: #fdfdfc;
-  --text-color: #1a1a1a;
-  --heading-font: 'Lora', 'Georgia', 'Times New Roman', serif;
-  --body-font: 'Inter', 'Helvetica', 'Arial', sans-serif;
-  --nav-link-color: #595959;
-  --border-color: #e5e5e5;
-  --button-bg: #ffffff;
-  --button-text: #1a1a1a;
-  --button-border: #d4d4d4;
-  --button-hover-bg: #f5f5f5;
+  /* Palette */
+  --color-bg:           #f7f6f3;
+  --color-surface:      #ffffff;
+  --color-border:       #e4e3df;
+  --color-border-hover: #b0afa8;
+  --color-border-focus: #111111;
+
+  --color-text-primary:   #111111;
+  --color-text-secondary: #666660;
+  --color-text-muted:     #999994;
+
+  --color-accent:          #111111;
+  --color-accent-hover:    #2a2a2a;
+  --color-accent-light:    #f0efeb;
+
+  --color-teal:            #1a6b5a;
+  --color-teal-light:      #e4f2ee;
+
+  --color-danger:   #dc2626;
+  --color-success:  #16a34a;
+  --color-warning:  #d97706;
+
+  /* legacy aliases */
+  --primary-bg:       var(--color-bg);
+  --text-color:       var(--color-text-primary);
+  --heading-font:     'Outfit', system-ui, sans-serif;
+  --body-font:        'Outfit', system-ui, sans-serif;
+  --nav-link-color:   var(--color-text-secondary);
+  --border-color:     var(--color-border);
+  --button-bg:        var(--color-surface);
+  --button-text:      var(--color-text-primary);
+  --button-border:    var(--color-border);
+  --button-hover-bg:  var(--color-accent-light);
+
+  /* Typography */
+  --font-sans:    'Outfit', system-ui, -apple-system, sans-serif;
+  --font-italic:  'Playfair Display', Georgia, serif;
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+
+  /* Spacing */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* Radii */
+  --radius-sm:  4px;
+  --radius:     8px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+  --radius-pill: 9999px;
+
+  /* Elevations */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.04);
+  --shadow-sm: 0 2px 6px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 6px 16px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.05);
+
+  /* Transition */
+  --transition: 0.18s ease;
 }
 
+/* ─── Reset & Base ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
 body {
-  font-family: var(--body-font);
-  background-color: var(--primary-bg);
-  color: var(--text-color);
-  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--heading-font);
-  color: var(--text-color);
-  font-weight: 400;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
 }
 
 a {
-  color: var(--nav-link-color);
+  color: var(--color-text-secondary);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color var(--transition);
+}
+a:hover { color: var(--color-text-primary); }
+
+img, svg { display: block; max-width: 100%; }
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
 }
 
-a:hover {
-  color: var(--text-color);
-}
-
+/* ─── Utility ───────────────────────────────────────────────────── */
 .container {
-  max-width: 1400px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 var(--sp-8);
 }
 
 .page-wrapper {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+}
+
+/* ─── Shared form controls ──────────────────────────────────────── */
+.form-input {
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.form-input:focus {
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px rgba(17,24,39,.06);
+}
+.form-input::placeholder { color: var(--color-text-muted); }
+
+/* ─── Shared btn-primary ────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: 0.75rem 1.75rem;
+  background: var(--color-accent);
+  color: #fff;
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.btn-primary:hover {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  color: #fff;
+}
+.btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+
+/* ─── Shared btn-secondary ──────────────────────────────────────── */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: 0.75rem 1.75rem;
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color var(--transition), background var(--transition);
+}
+.btn-secondary:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-border-hover);
 }

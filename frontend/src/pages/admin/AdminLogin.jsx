@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import '../../styles/admin.css';
 
 const AdminLogin = () => {
@@ -15,7 +15,7 @@ const AdminLogin = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/admin/auth/login', {
+            const response = await fetch('/api/admin/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -41,6 +41,13 @@ const AdminLogin = () => {
 
     return (
         <div className="admin-login-container">
+            <Link to="/" className="admin-home-btn" title="Back to Home">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/>
+                    <path d="M9 21V12h6v9"/>
+                </svg>
+                Home
+            </Link>
             <div className="admin-login-card">
                 <div className="admin-login-header">
                     <h1>FloodGuard Admin</h1>

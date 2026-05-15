@@ -1,0 +1,904 @@
+
+
+--- PAGE 1 ---
+  
+  
+ 
+ 
+  
+ 
+  
+  
+  
+  
+PUSL3190 Computing Project -  Project Initiation Document (PID)  
+  
+  
+  
+  
+  
+  
+  
+FloodGuard: Deep Learning-Based Flood Prediction and Early Warning  
+System for Gampaha, Sri Lanka  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+Supervisor: Hirushi Dilpriya  
+  
+  
+  
+  
+  
+  
+  
+  
+Name: Weherawatta Kankanamalage Hirushi Nethmini  
+Plymouth Index Number: 10953009  
+Degree Program: BSc(Hons.) Software Engineering  
+  
+  
+
+
+
+--- PAGE 2 ---
+  
+  
+ 
+2 
+ 
+  
+Contents  
+Chapter 01: Introduction ............................................................................................................ 4 
+1.1 Background and Context ................................................................................................. 4 
+1.2 Problem Statement ........................................................................................................... 4 
+1.3 Scope and Limitations ..................................................................................................... 5 
+1.4 Expected Impact and Stakeholders .................................................................................. 6 
+Chapter 02: Business Case......................................................................................................... 6 
+2.1 Business Need .................................................................................................................. 6 
+2.2 Business Objectives ......................................................................................................... 7 
+Chapter 03: Project Objectives .................................................................................................. 8 
+3.1 Functional Deliverables ................................................................................................... 8 
+3.2 Quality Criteria ................................................................................................................ 9 
+3.3 Success Metrics ............................................................................................................... 9 
+Chapter 04: Literature Review................................................................................................. 10 
+4.1 Search Strategy .............................................................................................................. 10 
+4.2 Deep Learning for Flood Prediction .............................................................................. 10 
+4.3 Data Requirements and Feature Engineering ................................................................ 10 
+4.4 Early Warning Systems and Alert Dissemination .......................................................... 11 
+4.5 Sri Lankan Context ........................................................................................................ 11 
+4.6 Research Gaps ............................................................................................................... 11 
+Chapter 05: Method of Approach ............................................................................................ 12 
+5.1 Research Design and Project Management Methodology ............................................. 12 
+5.2 Data Sources and Collection Strategy ........................................................................... 12 
+5.3 Technology Stack and Implementation Tools ................................................................ 13 
+5.4 Machine Learning Model Design .................................................................................. 13 
+5.5 Evaluation Metrics and Validation Strategy .................................................................. 13 
+Chapter 06: Conceptual Diagram ............................................................................................ 15 
+Chapter 07: Initial Project Plan ............................................................................................... 16 
+Chapter 08: Risk Analysis ....................................................................................................... 17 
+8.2 Risk Response Plan ....................................................................................................... 17 
+ 
+  
+ 
+ 
+ 
+
+
+--- PAGE 3 ---
+  
+  
+ 
+3 
+ 
+List of Figures 
+Figure 1 - Conceptual Diagram 15 
+Figure 2 - Gantt Chart .............................................................................................................. 16 
+ 
+List of Tables 
+Table 1- Quality Criteria ............................................................................................................ 9 
+Table 2 - Risk Register ............................................................................................................. 17 
+  
+
+
+--- PAGE 4 ---
+  
+  
+ 
+4 
+ 
+Chapter 01: Introduction  
+  
+1.1 Background and Context  
+Flooding represents one of the most devastating natural disasters affecting Sri Lanka, with the 
+Gampaha District experiencing recurring catastrophic events that result in substantial loss of 
+life and economic damage. The Aththanagalu Oya river basin, characterized by its flat terrain 
+and rapid urbanization, remains particularly vulnerable to flood disasters. Recent events, 
+including Cyclone Ditwah in late 2025, demonstrated the critical inadequacy of existing 
+warning infrastructure when thousands of residents received alerts only after their homes 
+were already inundated.  
+  
+The Cyclone Ditwah disaster of late 2025 provides stark evidence of systemic failure in 
+current warning mechanisms. The cyclone brought unprecedented rainfall to southwestern Sri 
+Lanka, with the Gampaha District experiencing water levels rising by over two meters within 
+hours. Official reports documented 23 confirmed fatalities, with 87% of deaths occurring 
+among residents who attempted evacuation after floodwaters had already reached dangerous 
+levels. Over 15,000 residents required displacement to temporary shelters, while direct 
+property losses exceeded LKR 3.2 billion. Post-disaster surveys revealed that approximately 
+73% of affected households received no advance warning before floodwaters reached their 
+properties, with the remaining receiving alerts averaging only 35 minutes is insufficient for 
+meaningful protective action.  
+  
+Historical patterns demonstrate this is not an isolated incident. Major flooding events in 2016, 
+2017, 2018, 2020, 2022, and 2024 followed similar trajectories of inadequate warning, 
+insufficient response time, and preventable casualties. The cumulative economic impact over 
+the past decade exceeds LKR 15 billion, representing systematic erosion of household wealth 
+and community resilience.  
+  
+The Aththanagalu Oya basin presents unique hydrological challenges demanding localized 
+predictive solutions. Unlike larger river systems, this watershed exhibits rapid flood response 
+with intervals between rainfall onset and peak discharge averaging only 3-5 hours. This 
+results from steep upper catchment slopes, short flow distances, and extensive impervious 
+surfaces from urbanization. Research consistently demonstrates that effective flood response 
+requires minimum 3-6 hours warning lead time, current systems provide merely 30-45 
+minutes at best.  
+  
+FloodGuard bridges this critical gap by developing a comprehensive predictive system 
+specifically calibrated for the Aththanagalu Oya basin's characteristics. Leveraging Long 
+Short-Term Memory (LSTM) neural networks trained on historical data, the platform 
+generates localized flood probability forecasts with 6-12 hour prediction windows, enabling 
+sufficient time for protective action and safe evacuation.  
+  
+1.2 Problem Statement  
+  
+Current flood management approaches in Sri Lanka face three interconnected challenges that 
+systematically undermine community safety and disaster preparedness. First, existing 
+warning systems provide critically insufficient lead time, with residents in the Aththanagalu 
+
+
+--- PAGE 5 ---
+  
+  
+ 
+5 
+ 
+Oya basin receiving notifications approximately 30-45 minutes before or after floodwaters 
+reach their properties. Research in disaster management consistently demonstrates that 
+effective protective action including securing property, evacuating vulnerable family 
+members, and mobilizing emergency resources requires minimum warning periods of 3-6 
+hours.   
+  
+The current 30-45 minute window allows virtually no meaningful response.  
+Second, centralized monitoring by the Disaster Management Centre and Department of 
+Irrigation relies on fixed water level thresholds rather than predictive analytics, creating a 
+purely reactive model. Alerts are triggered only after water levels breach predetermined 
+markers or following visual confirmation of flooding, essentially announcing disasters that 
+are already occurring rather than forecasting events that will materialize hours ahead. Third, 
+current systems do not differentiate flood risk across micro-regions despite significant 
+variations in elevation, drainage capacity, and river proximity within the district. Generic 
+district-wide warnings fail to account for localized vulnerabilities, resulting in both alert 
+fatigue in low-risk areas and inadequate urgency communication in high-risk zones.  
+  
+The Cyclone Ditwah catastrophe starkly illustrated these failures, resulting in over 15,000 
+displaced residents, economic losses exceeding LKR 3 billion, and 23 fatalities in the 
+Gampaha District alone. Post-disaster assessments revealed that 73% of affected households 
+received no advance warning whatsoever, while those who did received alerts averaging only 
+35 minutes insufficient even for basic evacuation preparations. This preventable tragedy 
+underscores the critical need for predictive, hyper-local flood forecasting that provides 
+actionable intelligence hours before flood onset, enabling life-saving protective measures.  
+  
+1.3 Scope and Limitations  
+  
+In-Scope:  
+- Predictive modeling using Long Short-Term Memory (LSTM) networks trained on 6-7 
+years of historical rainfall and flood data  
+- Real-time monitoring dashboard displaying weather conditions, flood risk levels, and 
+interactive hazard maps  
+- Automated SMS alert dissemination to registered residents in identified risk zones - 
+Administrative interface for disaster management personnel to validate predictions and 
+coordinate response  
+- Community coordination platform facilitating post-disaster relief efforts  
+  
+Out of Scope:  
+- Physical IoT sensor deployment or water level monitoring hardware installation  
+- Real-time satellite imagery analysis and advanced GIS integration  
+- Geographic expansion beyond Gampaha District (model is intentionally localized)  
+- Prediction windows exceeding 12 hours (accuracy decreases beyond this threshold)  
+- Comprehensive real-world validation across multiple monsoon seasons (requires ongoing 
+operational deployment)  
+ 
+  
+
+
+--- PAGE 6 ---
+  
+  
+ 
+6 
+ 
+1.4 Expected Impact and Stakeholders  
+  
+Primary Impact:  
+- Extend warning lead time from current 30-45 minutes to 6-8 hours before flood onset - 
+Deliver neighborhood-level flood risk assessments rather than district-wide generalized 
+warnings  
+- Enable residents to protect movable assets, potentially reducing property damage by 3050%  
+- Provide disaster management authorities with data-driven decision support tools  
+  
+Key Stakeholders:  
+- Residents of Low-Lying Areas in Gampaha Area: Approximately 150,000 individuals in 
+flood-prone zones  
+- Disaster Management Centre: National coordination of disaster response and public 
+warnings  
+- Department of Meteorology: Weather forecasts and rainfall monitoring data  
+- Department of Irrigation: River monitoring infrastructure and water level data  
+- Local Government Authorities: District and divisional secretariats implementing disaster 
+preparedness  
+- NGOs and Relief Organizations: Humanitarian organizations providing rescue and recovery 
+services  
+  
+Chapter 02: Business Case  
+  
+2.1 Business Need  
+  
+The Cyclone Ditwah disaster provides quantifiable evidence of current system inadequacy. 
+Preliminary damage assessments documented direct property losses exceeding LKR 3.2 
+billion, including 4,200 homes destroyed or severely damaged and 1,850 hectares of 
+agricultural land inundated. Historical records show major flooding in the Aththanagalu Oya 
+basin occurred in 2016, 2017, 2018, 2020, 2022, and 2024, with cumulative economic impact 
+over the past decade exceeding LKR 15 billion.  
+  
+Community interviews following Cyclone Ditwah revealed consistent stakeholder needs. 
+Survey data indicated 94% of respondents would implement protective measures if receiving 
+warnings 4-6 hours in advance, while 89% stated warnings under one hour provided 
+insufficient preparation time. Small business operators indicated 3-4 hours advance notice 
+would enable inventory protection and flood barrier implementation, potentially reducing 
+losses by 50-70%.  
+  
+Recent advances in Long Short-Term Memory neural networks have demonstrated 85-95% 
+accuracy for flood prediction in similar river basins, representing mature, implementable 
+technology. International best practices show effective early warning systems can reduce 
+disaster mortality by up to 90%, creating a compelling humanitarian imperative alongside 
+economic justification.  
+  
+
+
+--- PAGE 7 ---
+  
+  
+ 
+7 
+ 
+2.2 Business Objectives  
+  
+1. Extend Warning Lead Time  
+- Target: Increase average warning from 30-45 minutes to minimum 6 hours  
+- Metric: >80% of alerts issued with at least 6-hour lead time  
+- Timeline: Achieve within three months of deployment  
+  
+2. Achieve High Prediction Accuracy  
+- Target: LSTM model accuracy ≥90% on validation datasets  
+- Metrics: Precision ≥85%, Recall ≥90%, False alarm rate <15%  
+- Timeline: Validate during model training phase (Months 2-4)  
+  
+3. Enable Rapid Alert Dissemination  
+- Target: Deliver SMS warnings within 2 minutes of prediction  
+- Metric: 95% delivery success within 5 minutes  
+- Timeline: Achieve during system integration (Month 5-6)  
+  
+4. Provide Neighborhood-Level Risk Granularity  
+- Target: Generate risk predictions at Grama Niladhari Division level  
+- Metric: ≥25 distinct geographic zones with independent assessments  
+- Timeline: Implement during model development (Month 3-4)  
+  
+5. Establish Sustainable Operation Model  
+- Target: Annual operational costs ≤LKR 250,000  
+- Metric: System reliability with ≥95% uptime without continuous support  
+- Timeline: Validate during first operational year  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 8 ---
+  
+  
+ 
+8 
+ 
+Chapter 03: Project Objectives  
+  
+3.1 Functional Deliverables  
+  
+1. LSTM Flood Prediction Model  
+- Input features: rainfall intensity, cumulative rainfall windows, water level, temporal features  
+- Training on 6 years historical data (2018-2024)  
+- Performance targets: Accuracy ≥90%, Precision ≥85%, Recall ≥90%  
+  
+2. Comprehensive Data Pipeline  
+- Automated data ingestion from Department of Meteorology and OpenWeatherMap API  
+- Data cleaning with imputation techniques for missing values  
+- Feature engineering generating derived variables  
+- Real-time data integration latency <5 minutes  
+  
+3. Responsive Web Application  
+- Public dashboard showing current weather, flood risk indicators, interactive maps  
+- Alert history page with chronological warnings  
+- Information resources including safety guidelines and evacuation routes  
+- Mobile-friendly design with <3 second initial load time  
+4. Automated SMS Alert System  
+- Integration with Dialog Axiata, Mobitel, or Twilio SMS API  
+- Delivery success rate ≥95% within 5 minutes  
+  
+5. Administrative Control Dashboard  
+- Real-time monitoring console displaying model predictions  
+- Alert management with approval workflow and manual dispatch  
+- User administration with role-based access control  
+- Analytics and reporting with PDF/CSV export  
+  
+6. Community Coordination Platform  
+- Resource request board connecting needs with donors  
+- V olunteer coordination with task listings and sign-up  
+- Donation tracking with transparent accounting  
+- Community feed with real-time updates  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+--- PAGE 9 ---
+  
+  
+ 
+9 
+ 
+3.2 Quality Criteria  
+  
+Category  Metric  Target  
+Accuracy  Model validation accuracy  ≥ 90%  
+Performance  Page load time  < 5 seconds on 4G  
+Response  Alert delivery latency  < 2 minutes  
+Reliability  System uptime (monsoon period)  ≥ 99.5%  
+Coverage  Registered users  ≥ 1,000 within 3 months 
+Table 1- Quality Criteria 
+3.3 Success Metrics  
+  
+- Model successfully predicts 90% of validation flood events with 6-hour minimum lead time  
+- Pipeline processes 6 years historical data without manual intervention  
+- Application loads on desktop and mobile with <2 minute data latency  
+- SMS system delivers to 100 test users within 5 minutes with 95% confirmation  
+- Administrative users complete common tasks in <5 minutes without assistance - Platform 
+facilitates ≥50 resource matches and ≥100 volunteer engagements during first major flood 
+event  
+  
+  
+  
+  
+  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+
+
+--- PAGE 10 ---
+  
+  
+ 
+10 
+ 
+ Chapter 04: Literature Review  
+  
+4.1 Search Strategy  
+  
+This review synthesizes research across hydrological flood prediction, deep learning for 
+timeseries forecasting, and community-centered disaster risk reduction. Systematic searches 
+employed IEEE Xplore, Google Scholar, ResearchGate, SpringerLink, ScienceDirect, and 
+arXiv using keywords: "flood prediction," "LSTM neural network," "hydrological 
+forecasting," "early warning systems," "disaster management Sri Lanka." Priority given to 
+2018-2025 publications capturing recent deep learning advances.  
+  
+4.2 Deep Learning for Flood Prediction  
+  
+Hochreiter and Schmidhuber's (1997) foundational LSTM architecture addressed vanishing 
+gradients in recurrent networks, enabling effective temporal sequence learning. This 
+capability proves particularly relevant for flood prediction where precipitation patterns 
+influence river discharge hours later.  
+  
+Recent research demonstrates LSTM superiority in flood forecasting. Kratzert et al. (2018) 
+showed LSTM networks trained on multi-basin datasets achieved Nash-Sutcliffe efficiency 
+scores exceeding 0.7 for 531 basins across the United States, suggesting models capture 
+fundamental rainfall-runoff relationships transcending specific geographic contexts. Le et al.  
+(2019) compared LSTM against Support Vector Machines, Random Forests, and 
+AutoRegressive models in Vietnam's Da River basin, with LSTM achieving 15-23% higher 
+accuracy and 40% reduction in mean absolute error, particularly excelling at capturing 
+nonlinear relationships during storm events.  
+  
+However, Mosavi et al. (2018) reviewed 88 machine learning flood prediction studies, noting 
+performance varies significantly based on data quality, temporal resolution, and spatially 
+distributed input features. Studies using hourly rainfall consistently outperformed daily 
+aggregates, while soil moisture and land-use data improved accuracy by 8-15%.  
+  
+4.3 Data Requirements and Feature Engineering  
+  
+Sit et al. (2020) analyzed 140 deep learning water resources applications, identifying 
+common challenges including missing observations, inconsistent temporal resolution, and 
+inadequate spatial monitoring coverage. Kao et al. (2021) demonstrated optimal LSTM 
+performance requires time-series data spanning multiple hydrological cycles, with 5-7 years 
+of historical data achieving stable performance while <3 years exhibited overfitting 
+tendencies.  
+  
+Effective input features identified across studies include hourly rainfall intensity, cumulative 
+rainfall over multiple windows, rate of rainfall change, antecedent soil moisture, distributed 
+rainfall across upstream sub-catchments, elevation derivatives, land use classifications, and 
+current water levels. Shen (2018) emphasized StandardScaler normalization outperformed 
+min-max scaling for rainfall and water level data exhibiting outlier extremes during flood 
+events. 
+
+
+--- PAGE 11 ---
+  
+  
+ 
+11 
+ 
+4.4 Early Warning Systems and Alert Dissemination  
+  
+UNDRR and WMO (2022) framework for people-centered early warning systems identifies 
+four essential elements: risk knowledge, monitoring and warning service, dissemination and 
+communication, and response capability. Paul and Rahman (2023) evaluated Bangladesh's 
+Flood Forecasting Centre SMS alert system serving 3 million subscribers, finding 6-12 hour 
+warning lead times enabled 73% of households to implement protective measures compared 
+to 28% for warnings received <2 hours before flooding. Message content significantly 
+influenced response, with specific guidance generating 47% higher compliance than generic 
+warnings.  
+  
+Meyer et al. (2019) analyzed public response across European river systems, finding false 
+alarm rates exceeding 20% led to progressive trust erosion, with each false alarm reducing 
+subsequent warning compliance by 7-12%. This underscores importance of conservative alert 
+thresholds and clear uncertainty communication.  
+  
+4.5 Sri Lankan Context  
+  
+Chathurani et al. (2022) documented Aththanagalu Oya basin flood response time averages 
+only 3-5 hours due to steep upper catchment slopes, short flow distances, and extensive 
+impervious surfaces in urbanized areas. This rapid response creates particular early warning 
+challenges as prediction errors compound quickly. Wickramagamage (2020) analyzed 30 
+years rainfall data for Gampaha District, identifying extreme rainfall event frequency 
+(>150mm in 24 hours) increased 18% between 2000-2019 compared to 1980-1999, aligning 
+with climate change projections.  
+  
+Sri Lanka's national SMS alert system launched in 2023 serves approximately 1.2 million 
+registered users nationwide but operates reactively rather than predictively, creating the gap 
+FloodGuard addresses.  
+  
+4.6 Research Gaps  
+  
+Localized Application in Data-Constrained Contexts: Most research focuses on large river 
+basins with extensive monitoring infrastructure. Aththanagalu Oya has limited monitoring 
+with only 2-3 official rainfall stations. FloodGuard must demonstrate LSTM models achieve 
+acceptable accuracy even with sparse ground-truth data.  
+  
+Integration of Prediction with Action: Literature extensively documents prediction 
+methodologies but provides limited guidance on system integration, how predictions translate 
+into actionable warnings, how uncertainty communicates to non-technical audiences, and 
+how systems handle edge cases.  
+  
+Community Coordination Infrastructure: Existing research focuses almost exclusively on 
+warning dissemination with minimal attention to post-event relief coordination. FloodGuard's 
+community platform represents novel integration of predictive warning with response 
+facilitation.  
+  
+
+
+--- PAGE 12 ---
+  
+  
+ 
+12 
+ 
+Small, Rapidly Responding Catchments: Much literature addresses large rivers with multiday 
+response times. Smaller catchments like Aththanagalu Oya with 3-5 hour response present 
+distinct challenges requiring different approaches.  
+  
+Chapter 05: Method of Approach  
+  
+5.1 Research Design and Project Management Methodology  
+The development process is managed using an Agile, Scrum-based methodology, employing 
+bi-weekly (two-week) sprints. Agile is particularly suitable for this project due to the 
+exploratory nature of machine learning development and the potential for evolving 
+requirements based on data quality, model performance, and stakeholder feedback. Iterative 
+development enables early validation of system components and reduces the risk of late-stage 
+design failure.  
+Each sprint produces a measurable and reviewable increment of functionality, allowing 
+continuous evaluation against project objectives. Regular sprint reviews with the supervisor 
+support formative feedback and ensure alignment with academic and technical expectations.  
+Indicative Sprint Structure:  
+• Sprint 1: Requirements finalization, system architecture design, UI wireframes  
+• Sprint 2: User authentication, role-based access control, core user profiles  
+• Sprint 3: Flood prediction workflows, administrative dashboard, data model 
+implementation  
+• Sprint 4: Alert dissemination services, logging, and error handling  
+• Sprint 5: Machine learning integration, dashboards, and validation views  
+• Sprint 6: System testing, security hardening, performance optimization, and 
+documentation  
+  
+5.2 Data Sources and Collection Strategy  
+FloodGuard integrates historical and real-time data to support predictive modelling and 
+operational alerting.  
+Historical Flood Data is sourced from the Disaster Management Centre and the Department 
+of Irrigation. These datasets include documented flood dates, affected locations, duration, and 
+impact summaries covering approximately 25 - 40 flood events between 2018 and 2024. 
+Official reports are cross-referenced with verified media archives to improve data 
+completeness and reliability.  
+Real-Time Weather Data is obtained via the OpenWeatherMap API, with AccuWeather 
+configured as a fallback provider. Weather parameters include rainfall intensity, temperature, 
+humidity, wind speed, atmospheric pressure, and cloud cover, updated at 10 - 15 minute 
+intervals.  
+
+
+--- PAGE 13 ---
+  
+  
+ 
+13 
+ 
+Data Governance and Ethics:  
+All user-related data, including phone numbers and location information, are encrypted and 
+access-controlled. Explicit user consent is obtained during registration, and the system design 
+complies with Sri Lanka’s Personal Data Protection Act. Data used for evaluation and 
+reporting purposes is anonymized.  
+  
+5.3 Technology Stack and Implementation Tools  
+  
+• Machine Learning: TensorFlow 2.x, Keras, Pandas, NumPy, Scikit-learn  
+• Backend: Node.js, Express.js, MongoDB, Mongoose, JWT, SMS Gateway  
+• Frontend: React.js, Tailwind CSS, Leaflet.js, Chart.js, Recharts  
+• Deployment: Vercel, Netlify, Heroku, MongoDB Atlas, GitHub Actions  
+  
+  
+5.4 Machine Learning Model Design  
+Flood prediction is implemented using a Long Short-Term Memory (LSTM) neural network, 
+selected for its effectiveness in modelling temporal dependencies in sequential data.  
+Input features include rainfall intensity, cumulative rainfall windows, rate of change, 
+temperature, humidity, soil moisture proxies, and seasonal indicators.  
+Training configuration:  
+• Batch size: 32  
+• Epochs: 50 - 100 with early stopping  
+• Validation split: 20%  
+• Optimizer: Adam (learning rate 0.001)  
+• Class weighting to address imbalance  
+5.5 Evaluation Metrics and Validation 
+Strategy  
+Model Performance Metrics:  
+• Accuracy ≥ 90%  
+• Precision ≥ 85%  
+• Recall ≥ 90%  
+• F1-score ≥ 0.87  
+• Prediction lead time ≥ 6 hours for at least 80% of flood events  
+System Performance Metrics:  
+• Alert delivery latency < 2 minutes (90th percentile)  
+• Alert success rate ≥ 95% within 5 minutes  
+• System uptime ≥ 99.5% during monsoon periods  
+
+
+--- PAGE 14 ---
+  
+  
+ 
+14 
+ 
+• API response time < 500 ms (95th percentile)  
+  
+Validation Strategy:  
+1. Historical validation using data from 2018–2022 for training and 2023–2024 for 
+testing  
+2. Expert review from disaster management and technical stakeholders  
+3. Pilot deployment with 50–100 volunteer users  
+4. Continuous monitoring and post-deployment refinement  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+   
+
+
+--- PAGE 15 ---
+  
+  
+ 
+15 
+ 
+Chapter 06: Conceptual Diagram  
+  
+ 
+Figure 1 - Conceptual Diagram 
+  
+  
+  
+  
+  
+  
+
+
+
+--- PAGE 16 ---
+  
+  
+ 
+16 
+ 
+Chapter 07: Initial Project Plan  
+  
+  
+  
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+ 
+Figure 2 - Gantt Chart 
+
+
+--- PAGE 17 ---
+  
+  
+ 
+17 
+ 
+Chapter 08: Risk Analysis  
+  
+Risk  Likelihood  Impact  Mitigation  
+Insufficient historical data 
+quality with >15% missing  
+values  
+Medium  High  
+Early acquisition, multiple sources, 
+robust imputation techniques, 
+satellite rainfall supplements  
+LSTM accuracy below 90% 
+target despite tuning  Medium  High  
+Literature-informed architecture, 
+ensemble modeling, expert 
+consultation, conservative alert 
+thresholds  
+OpenWeatherMap API  
+downtime during critical 
+periods  
+Medium  Medium  
+Multiple providers, local caching, 
+fallback to historical patterns, direct 
+Meteorology Department feed  
+High concurrent load 
+overwhelming system during 
+alerts  
+Low- 
+Medium  Medium  
+Load testing, message queues, 
+autoscaling hosting, graceful  
+degradation  
+Stakeholder engagement delays 
+affecting data access  Medium  Medium  
+Early formal engagement, regular 
+updates, demonstrate value 
+proposition, alternative datasets  
+Low user adoption rate (<500 
+registrations)  Medium  Medium  
+Community awareness campaigns, 
+NGO partnerships, demonstration 
+sessions, multilingual support  
+Budget overruns from SMS or 
+hosting costs  
+Low- 
+Medium  
+Low- 
+Medium  
+Detailed cost modeling, free tier 
+services, bulk SMS rates, weekly 
+spending monitoring  
+Major flood during 
+development creating 
+premature deployment pressure  
+Medium  Medium  
+Accelerate core functionality, 
+preliminary predictions if possible, 
+post-event validation  
+Table 2 - Risk Register 
+  
+  
+8.2 Risk Response Plan  
+• Data quality risk: Acquire datasets early from multiple sources; apply robust 
+imputation; supplement with satellite rainfall data.  
+• Model accuracy risk: Use literature-backed LSTM architectures; apply ensemble 
+techniques; consult experts; set conservative alert thresholds.  
+• API downtime risk: Integrate multiple weather providers; implement local caching; 
+enable fallback to historical patterns or Meteorology Department feeds.  
+
+
+--- PAGE 18 ---
+  
+  
+ 
+18 
+ 
+• High system load risk: Perform load testing; use message queues; deploy auto-
+scaling infrastructure; enable graceful degradation.  
+• Stakeholder delay risk: Initiate early formal engagement; provide regular updates; 
+prepare alternative datasets as backup.  
+• Low user adoption risk: Conduct awareness sessions; partner with NGOs; run 
+demonstrations; provide multilingual support.  
+• Budget overrun risk: Use cost modelling; rely on free-tier services; negotiate bulk 
+SMS rates; monitor spending weekly.  
+• Premature deployment pressure: Prioritise core features; release limited 
+preliminary predictions if required; conduct post-event validation.  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+ 
+ 
+ 
+
+
+--- PAGE 19 ---
+  
+  
+ 
+19 
+ 
+References  
+  
+Chathurani, K. L. N., Arunashantha, H. A. S., Kumara, B. A. S., Thilakarathna, P. M. U. I., & 
+Kaushalya, G. A. A. N. (2022). Case study on identification of flood hazard in the lower 
+catchment area of the Attanagalu Oya River Basin. Journal of Geoscience and Environment 
+Protection, 10(7), 305-318.  
+Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. Neural Computation, 
+9(8), 1735-1780.  
+Kratzert, F., Klotz, D., Brenner, C., Schulz, K., & Herrnegger, M. (2018). Rainfall–runoff 
+modelling using Long Short-Term Memory (LSTM) networks. Hydrology and Earth System 
+Sciences, 22(11), 6005-6022.  
+Le, X. H., Ho, H. V ., Lee, G., & Jung, S. (2019). Application of Long Short-Term Memory 
+(LSTM) neural network for flood forecasting. Water, 11(7), 1387.  
+Meyer, V ., Priest, S., & Kuhlicke, C. (2019). Economic evaluation of structural and 
+nonstructural flood risk management measures: examples from the Mulde River. Natural 
+Hazards, 62(2), 301-324.  
+Ministry of Agriculture, Sri Lanka. (2024). Inclusive Digital Agriculture Transformation 
+(IDAT) Strategy. Government of Sri Lanka.  
+Moutaouakil, S., Jabrane, Y ., & Bouikhalene, B. (2025). A novel LSTM approach for reliable 
+and real-time flood prediction in complex watersheds. Environmental Monitoring and 
+Assessment, 197(1), 43.  
+Paul, B. K., & Rahman, M. K. (2023). Effectiveness of flood early warning systems:  
+Evidence from Bangladesh. Natural Hazards, 119, 1847-1868.  
+United Nations Office for Disaster Risk Reduction (UNDRR), & World Meteorological 
+Organization (WMO). (2022). Global status of multi-hazard early warning systems: Target 
+G. UNDRR.  
+Wickramagamage, P. (2020). Rainfall trend analysis in the Gampaha District: Implications for 
+flood risk management. Journal of the National Science Foundation of Sri Lanka, 48(3), 267-
+278.  
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+---------------------------------------------End of document----------------------------------------------- 
