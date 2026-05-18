@@ -76,153 +76,173 @@ const parseLiveRisk = (liveData) =>
   || liveData?.irrigationSnapshot?.officialRisk
   || null;
 
+const initialStats = {
+  temp: null,
+  condition: '',
+  humidity: null,
+  wind: null,
+  rainfall: 0,
+  location: getRegisteredLocation() || 'Gampaha',
+  riverStatus: 'Checking',
+  floodRisk: 'Unknown',
+  riskSource: 'Checking live data',
+  loading: true,
+};
+
+let sharedStats = initialStats;
+let pollingStarted = false;
+let requestInFlight = null;
+const listeners = new Set();
+
+const publishStats = (update) => {
+  sharedStats = { ...sharedStats, ...update };
+  listeners.forEach((listener) => listener(sharedStats));
+};
+
+async function fetchWeather(lat, lon, apiKey) {
+  try {
+    const res = await axios.get(`${API_BASE}/api/weather/current`, {
+      params: { lat, lon },
+      timeout: 6000,
+    });
+    if (res.data?.temp !== undefined) return res.data;
+  } catch {
+    // Fall back to direct OpenWeather below.
+  }
+
+  try {
+    const res = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
+      params: { lat, lon, units: 'metric', appid: apiKey },
+      timeout: 6000,
+    });
+    const w = res.data;
+    return {
+      temp: Math.round(w.main.temp),
+      condition: w.weather?.[0]?.main || '',
+      humidity: w.main.humidity,
+      wind: w.wind?.speed,
+      rainfall: w.rain?.['1h'] || w.rain?.['3h'] || 0,
+      location: w.name || 'Gampaha',
+    };
+  } catch (err) {
+    console.warn('Weather lookup failed:', err.message);
+  }
+
+  return null;
+}
+
+async function fetchLiveStats(lat = DEFAULT_LAT, lon = DEFAULT_LON) {
+  if (requestInFlight) return requestInFlight;
+
+  requestInFlight = (async () => {
+    try {
+      let apiKey = import.meta.env.VITE_OPENWEATHER_KEY;
+      if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') apiKey = OWM_KEY;
+
+      const preferredLocation = getRegisteredLocation();
+
+      const [weatherResult, zoneResult, liveResult, latestResult] = await Promise.allSettled([
+        fetchWeather(lat, lon, apiKey),
+        axios.get(`${API_BASE}/api/predictions/official-zones?_t=${Date.now()}`, { timeout: 9000 }),
+        axios.get(`${API_BASE}/api/predictions/live?_t=${Date.now()}`, { timeout: 9000 }),
+        axios.get(`${API_BASE}/api/predictions/latest?_t=${Date.now()}`, { timeout: 9000 }),
+      ]);
+
+      const update = {
+        loading: false,
+        location: preferredLocation || 'Gampaha',
+      };
+
+      if (weatherResult.status === 'fulfilled' && weatherResult.value) {
+        const weather = weatherResult.value;
+        Object.assign(update, {
+          temp: weather.temp,
+          condition: weather.condition,
+          humidity: weather.humidity,
+          wind: weather.wind,
+          rainfall: weather.rainfall,
+          location: preferredLocation || weather.location || 'Gampaha',
+        });
+      }
+
+      const zonePredictions = zoneResult.status === 'fulfilled'
+        ? zoneResult.value.data?.predictions || []
+        : [];
+      const latestPredictions = latestResult.status === 'fulfilled'
+        ? latestResult.value.data?.predictions || []
+        : [];
+      const zonePrediction = pickRelevantPrediction(zonePredictions, preferredLocation, lat, lon);
+      const latestPrediction = pickRelevantPrediction(latestPredictions, preferredLocation, lat, lon);
+      const liveRisk = liveResult.status === 'fulfilled' && liveResult.value.data?.success
+        ? parseLiveRisk(liveResult.value.data)
+        : null;
+
+      const zoneRisk = zonePrediction?.riskLevel || null;
+      const latestRisk = latestPrediction?.riskLevel || null;
+      const shouldBlendLiveRisk = !zonePrediction
+        || sameLocation(zonePrediction.location, 'Gampaha')
+        || sameLocation(zonePrediction.location, 'Gampaha City')
+        || sameLocation(zonePrediction.location, 'Dunamale')
+        || sameLocation(preferredLocation, 'Gampaha')
+        || sameLocation(preferredLocation, 'Dunamale');
+
+      const floodRisk = zonePrediction
+        ? highestRisk(zoneRisk, shouldBlendLiveRisk ? liveRisk : null)
+        : highestRisk(shouldBlendLiveRisk ? liveRisk : null, latestRisk);
+
+      const sourcePrediction = zonePrediction || latestPrediction;
+      Object.assign(update, {
+        floodRisk,
+        riverStatus: sourcePrediction?.riverRisk || liveRisk || floodRisk,
+        riskSource: sourcePrediction?.source || (liveRisk ? 'Live prediction' : 'Latest prediction'),
+        location: preferredLocation || sourcePrediction?.location || update.location || 'Gampaha',
+        rainfall: sourcePrediction?.rainfall ?? sourcePrediction?.rainfallMm ?? update.rainfall ?? 0,
+      });
+
+      publishStats(update);
+    } catch (err) {
+      console.error('useLiveStats error:', err);
+      publishStats({
+        loading: false,
+        floodRisk: 'Unknown',
+        riverStatus: 'Unavailable',
+        riskSource: 'Live risk data unavailable',
+      });
+    } finally {
+      requestInFlight = null;
+    }
+  })();
+
+  return requestInFlight;
+}
+
+const startPolling = () => {
+  if (pollingStarted) return;
+  pollingStarted = true;
+
+  fetchLiveStats(DEFAULT_LAT, DEFAULT_LON);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => fetchLiveStats(pos.coords.latitude, pos.coords.longitude),
+      () => {},
+      { timeout: 3000, maximumAge: 30000 }
+    );
+  }
+
+  setInterval(() => fetchLiveStats(DEFAULT_LAT, DEFAULT_LON), 60000);
+};
+
 export default function useLiveStats() {
-  const [stats, setStats] = useState({
-    temp: null,
-    condition: '',
-    humidity: null,
-    wind: null,
-    rainfall: 0,
-    location: getRegisteredLocation() || 'Gampaha',
-    riverStatus: 'Checking',
-    floodRisk: 'Unknown',
-    riskSource: 'Checking live data',
-    loading: true,
-  });
+  const [stats, setStats] = useState(sharedStats);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchWeather(lat, lon, apiKey) {
-      try {
-        const res = await axios.get(`${API_BASE}/api/weather/current`, {
-          params: { lat, lon },
-          timeout: 6000,
-        });
-        if (res.data?.temp !== undefined) return res.data;
-      } catch {
-        // Fall back to direct OpenWeather below.
-      }
-
-      try {
-        const res = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
-          params: { lat, lon, units: 'metric', appid: apiKey },
-          timeout: 6000,
-        });
-        const w = res.data;
-        return {
-          temp: Math.round(w.main.temp),
-          condition: w.weather?.[0]?.main || '',
-          humidity: w.main.humidity,
-          wind: w.wind?.speed,
-          rainfall: w.rain?.['1h'] || w.rain?.['3h'] || 0,
-          location: w.name || 'Gampaha',
-        };
-      } catch (err) {
-        console.warn('Weather lookup failed:', err.message);
-      }
-
-      return null;
-    }
-
-    async function fetchData(lat, lon) {
-      try {
-        let apiKey = import.meta.env.VITE_OPENWEATHER_KEY;
-        if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') apiKey = OWM_KEY;
-
-        const preferredLocation = getRegisteredLocation();
-
-        const [weatherResult, zoneResult, liveResult, latestResult] = await Promise.allSettled([
-          fetchWeather(lat, lon, apiKey),
-          axios.get(`${API_BASE}/api/predictions/official-zones?_t=${Date.now()}`, { timeout: 9000 }),
-          axios.get(`${API_BASE}/api/predictions/live?_t=${Date.now()}`, { timeout: 9000 }),
-          axios.get(`${API_BASE}/api/predictions/latest?_t=${Date.now()}`, { timeout: 9000 }),
-        ]);
-
-        if (cancelled) return;
-
-        const update = {
-          loading: false,
-          location: preferredLocation || 'Gampaha',
-        };
-
-        if (weatherResult.status === 'fulfilled' && weatherResult.value) {
-          const weather = weatherResult.value;
-          Object.assign(update, {
-            temp: weather.temp,
-            condition: weather.condition,
-            humidity: weather.humidity,
-            wind: weather.wind,
-            rainfall: weather.rainfall,
-            location: preferredLocation || weather.location || 'Gampaha',
-          });
-        }
-
-        const zonePredictions = zoneResult.status === 'fulfilled'
-          ? zoneResult.value.data?.predictions || []
-          : [];
-        const latestPredictions = latestResult.status === 'fulfilled'
-          ? latestResult.value.data?.predictions || []
-          : [];
-        const zonePrediction = pickRelevantPrediction(zonePredictions, preferredLocation, lat, lon);
-        const latestPrediction = pickRelevantPrediction(latestPredictions, preferredLocation, lat, lon);
-        const liveRisk = liveResult.status === 'fulfilled' && liveResult.value.data?.success
-          ? parseLiveRisk(liveResult.value.data)
-          : null;
-
-        const zoneRisk = zonePrediction?.riskLevel || null;
-        const latestRisk = latestPrediction?.riskLevel || null;
-        const shouldBlendLiveRisk = !zonePrediction
-          || sameLocation(zonePrediction.location, 'Gampaha')
-          || sameLocation(zonePrediction.location, 'Dunamale')
-          || sameLocation(preferredLocation, 'Gampaha')
-          || sameLocation(preferredLocation, 'Dunamale');
-
-        const floodRisk = highestRisk(
-          zoneRisk,
-          shouldBlendLiveRisk ? liveRisk : null,
-          latestRisk
-        );
-
-        const sourcePrediction = zonePrediction || latestPrediction;
-        Object.assign(update, {
-          floodRisk,
-          riverStatus: sourcePrediction?.riverRisk || liveRisk || floodRisk,
-          riskSource: sourcePrediction?.source || (liveRisk ? 'Live prediction' : 'Latest prediction'),
-          location: preferredLocation || sourcePrediction?.location || update.location || 'Gampaha',
-          rainfall: sourcePrediction?.rainfall ?? sourcePrediction?.rainfallMm ?? update.rainfall ?? 0,
-        });
-
-        setStats((current) => ({ ...current, ...update }));
-      } catch (err) {
-        console.error('useLiveStats error:', err);
-        if (!cancelled) {
-          setStats((current) => ({
-            ...current,
-            loading: false,
-            floodRisk: 'Unknown',
-            riverStatus: 'Unavailable',
-            riskSource: 'Live risk data unavailable',
-          }));
-        }
-      }
-    }
-
-    fetchData(DEFAULT_LAT, DEFAULT_LON);
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => fetchData(pos.coords.latitude, pos.coords.longitude),
-        () => {},
-        { timeout: 3000, maximumAge: 30000 }
-      );
-    }
-
-    const interval = setInterval(() => fetchData(DEFAULT_LAT, DEFAULT_LON), 60000);
+    listeners.add(setStats);
+    setStats(sharedStats);
+    startPolling();
 
     return () => {
-      cancelled = true;
-      clearInterval(interval);
+      listeners.delete(setStats);
     };
   }, []);
 

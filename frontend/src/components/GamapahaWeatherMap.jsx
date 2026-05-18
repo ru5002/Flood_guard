@@ -40,6 +40,21 @@ const MOCK_MAP_DATA = {
     "Kelaniya": { temp: 30, condition: "Clear", description: "clear sky", humidity: 68, icon: "01d" }
 };
 
+const LOCATION_ALIASES = {
+  Gampaha: ["Gampaha", "Gampaha City"],
+  "Ja-Ela": ["Ja-Ela", "Ja Ela", "Jaela"]
+};
+
+const normalizeLocation = (value = "") =>
+  value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+const predictionMatchesLocation = (prediction, locationName) => {
+  const predictionName = normalizeLocation(prediction?.location);
+  const aliases = LOCATION_ALIASES[locationName] || [locationName];
+
+  return aliases.some((alias) => normalizeLocation(alias) === predictionName);
+};
+
 export default function GamapahaWeatherMap({ predictions = [] }) {
   const [locations, setLocations] = useState(
     gampahaAreas.map(area => ({ ...area, temp: null, condition: null, description: null, humidity: null, icon: null }))
@@ -109,7 +124,7 @@ export default function GamapahaWeatherMap({ predictions = [] }) {
         />
 
         {locations.map((loc, index) => {
-            const pred = predictions.find(p => p.location === loc.name);
+            const pred = predictions.find(p => predictionMatchesLocation(p, loc.name));
             const riskColors = {
                 Critical: '#7c3aed',
                 High:     '#dc2626',

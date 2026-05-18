@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "sms:test": "npm --prefix backend run sms:test"
+    "sms:test": "npm --prefix backend run sms:test",
+    "docker:refresh-frontend": "powershell -ExecutionPolicy Bypass -File scripts/refresh-frontend-container.ps1"
   },
   "dependencies": {
     "axios": "^1.13.4",

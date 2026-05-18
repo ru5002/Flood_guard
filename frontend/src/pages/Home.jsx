@@ -67,7 +67,6 @@ const features = [
 ];
 
 const stats = [
-    { value: '10',    label: 'Areas Monitored' },
     { value: '1',     label: 'District Focus' },
     { value: 'Live',  label: 'Weather Data Checks' },
     { value: '74.5%', label: 'Trained Model Accuracy' },
@@ -186,11 +185,6 @@ const Home = () => {
                                     )}
                                 </div>
 
-                                {/* Accuracy badge */}
-                                <div className="accuracy-badge">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a6b5a" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    Model trained for project use
-                                </div>
                             </div>
                         </div>
                     </div>
