@@ -68,6 +68,17 @@ const getLocationAlert = (prediction, userZone) => {
     return null;
 };
 
+const dominantRiskSignal = (item = {}) => {
+    const riverRank = RISK_ORDER[item.riverRisk] ?? RISK_ORDER[item.officialRiskLevel] ?? 0;
+    const rainfallRank = RISK_ORDER[item.rainfallRisk] ?? 0;
+    const rainfall = Number(item.rainfall ?? 0);
+    const forecastRain = Number(item.forecastTotalRainfall ?? 0);
+
+    if (riverRank >= rainfallRank && riverRank > 0) return 'river';
+    if (rainfallRank > 0 || rainfall > 0 || forecastRain > 0) return 'rainfall';
+    return 'stable';
+};
+
 const riskFromLiveData = (liveData) => {
     const modelRisk = liveData.prediction?.day1?.riskLevel || 'None';
     const officialRisk = liveData.irrigationSnapshot?.officialRisk;
@@ -299,7 +310,13 @@ const Predictions = () => {
             const modelNote = item.analysisType === 'official_gauge_rf_supported'
                 ? ' RF model support is strongest here because this is the Aththanagalu Oya context.'
                 : ' This uses official gauge thresholds only; the RF model is not trained for this river basin yet.';
-            return `Mapped to official ${item.mappedGauge} gauge on ${item.mappedBasin}. Water level ${Number(item.waterLevel || 0).toFixed(2)}m. Local live rainfall is ${Number(item.rainfall || 0).toFixed(1)}mm from ${item.rainfallSource || 'weather data'}.${distance}${modelNote}`;
+            const signal = dominantRiskSignal(item);
+            const driver = signal === 'river'
+                ? ' The current risk is mainly driven by the mapped river gauge level, not local rainfall.'
+                : signal === 'rainfall'
+                    ? ' The current risk is mainly driven by rainfall or short-term forecast rainfall.'
+                    : ' River level and rainfall are currently within stable ranges.';
+            return `Mapped to official ${item.mappedGauge} gauge on ${item.mappedBasin}. Water level ${Number(item.waterLevel || 0).toFixed(2)}m. Local live rainfall is ${Number(item.rainfall || 0).toFixed(1)}mm from ${item.rainfallSource || 'weather data'}.${driver}${distance}${modelNote}`;
         }
         const risk = item.riskLevel?.toUpperCase();
         if (risk === 'CRITICAL') {
@@ -314,12 +331,13 @@ const Predictions = () => {
         return "Stable: Water level and rainfall trend are within safe range.";
     };
 
-    const getEnhancedCondition = (risk) => {
+    const getEnhancedCondition = (risk, item = {}) => {
         const r = risk?.toUpperCase();
-        if (r === 'CRITICAL') return "Immediate Flood Risk";
-        if (r === 'HIGH') return "Heavy Rainfall / Flood Possible";
-        if (r === 'MODERATE') return "Rainfall Increasing";
-        if (r === 'LOW') return "Light Rainfall / Low Level";
+        const signal = dominantRiskSignal(item);
+        if (r === 'CRITICAL') return signal === 'rainfall' ? "Critical Rainfall / Flood Risk" : "Critical River Level / Flood Risk";
+        if (r === 'HIGH') return signal === 'rainfall' ? "Heavy Rainfall / Flood Possible" : "High River Level / Flood Possible";
+        if (r === 'MODERATE') return signal === 'rainfall' ? "Rainfall Increasing" : "River Level Rising";
+        if (r === 'LOW') return "Low Risk / Continue Monitoring";
         return "Clear / Stable Conditions";
     };
 
@@ -349,6 +367,14 @@ const Predictions = () => {
         ? predictions.find(item => sameLocation(item.location, registeredUser.zone))
         : null;
     const registeredAlert = getLocationAlert(registeredPrediction, registeredUser?.zone);
+    const currentFocusPrediction = predictions.find(p => p.isNearest)
+        || predictions.find(p => sameLocation(p.location, selectedLocation || ''))
+        || predictions.find(p => sameLocation(p.location, 'Gampaha'))
+        || predictions[0];
+    const displayLiveRisk = currentFocusPrediction?.riskLevel
+        || livePrediction?.current?.riskLevel
+        || livePrediction?.day1?.riskLevel
+        || 'None';
 
     return (
         <div className="dashboard-container">
@@ -428,14 +454,16 @@ const Predictions = () => {
                     </div>
                 )}
 
-                <div className={`live-banner risk-${(livePrediction?.day1?.riskLevel || 'none').toLowerCase()}`}>
+                <div className={`live-banner risk-${displayLiveRisk.toLowerCase()}`}>
                     <div className="banner-icon">📍</div>
                     <div className="banner-content">
                         <strong>Current Focus: {predictions.find(p => p.isNearest)?.location || selectedLocation || 'Gampaha District'}</strong>
                         <p>
-                            {livePrediction ? 
-                                `Random Forest Analysis: Day 1 (Tomorrow): ${livePrediction.day1?.riskLevel} | Day 2: ${livePrediction.day2?.riskLevel}` : 
-                                'Official gauge readings are mapped to each relevant area. RF support is strongest for Aththanagalu Oya zones.'}
+                            {currentFocusPrediction ?
+                                `Current combined risk: ${displayLiveRisk}. ${getEnhancedReason(currentFocusPrediction)}` :
+                                livePrediction ?
+                                    `Random Forest Analysis: Day 1 (Tomorrow): ${livePrediction.day1?.riskLevel} | Day 2: ${livePrediction.day2?.riskLevel}` :
+                                    'Official gauge readings are mapped to each relevant area. RF support is strongest for Aththanagalu Oya zones.'}
                         </p>
                         <small style={{ display: 'block', marginTop: '4px', fontSize: '11px', color: '#94a3b8' }}>
                             Model: The model uses the latest 14 days of rainfall and water-level trends to predict the next 2 days. Old datasets cannot directly predict future dates without recent input.
@@ -480,7 +508,7 @@ const Predictions = () => {
 
                                     <div className="card-body">
                                         <p className="pred-text" style={{ fontWeight: '600', color: '#1e293b' }}>
-                                            {getEnhancedCondition(item.riskLevel)}
+                                            {getEnhancedCondition(item.riskLevel, item)}
                                         </p>
                                         <p className="pred-text" style={{ fontSize: '11px', fontStyle: 'italic', marginBottom: '12px' }}>
                                             <strong>Reason:</strong> {getEnhancedReason(item)}

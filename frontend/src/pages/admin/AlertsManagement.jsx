@@ -72,6 +72,7 @@ const AdminAlertsManagement = () => {
         riskLevel: 'High',
         title: '',
         customMessage: '',
+        demoPhone: '',
     });
 
     const navigate = useNavigate();
@@ -146,10 +147,14 @@ const AdminAlertsManagement = () => {
         setResult(null);
 
         try {
-            const response = await fetch('/api/alerts/dispatch', {
+            const demoPhone = form.demoPhone.trim();
+            const endpoint = demoPhone ? '/api/alerts/demo' : '/api/alerts/dispatch';
+            const payload = demoPhone ? { ...form, phone: demoPhone } : form;
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: authHeader(),
-                body: JSON.stringify(form),
+                body: JSON.stringify(payload),
             });
             const data = await response.json();
             setResult(data);
@@ -174,6 +179,7 @@ const AdminAlertsManagement = () => {
 
     const statusCount = (status) => stats?.byStatus?.find((item) => item._id === status)?.count || 0;
     const selectedGuidance = RISK_GUIDANCE[form.riskLevel] || RISK_GUIDANCE.Low;
+    const demoPhone = form.demoPhone.trim();
     const messageTarget = form.zone === 'ALL' ? 'all registered flood zones' : (form.zone || 'the selected zone');
     const previewMessage = form.customMessage.trim() || selectedGuidance.message(messageTarget);
     const messageSegments = Math.max(1, Math.ceil(previewMessage.length / 160));
@@ -328,6 +334,19 @@ const AdminAlertsManagement = () => {
                                         </div>
 
                                         <div className="form-group">
+                                            <label>
+                                                Demo Recipient Phone
+                                                <span> optional: sends only to this number</span>
+                                            </label>
+                                            <input
+                                                type="tel"
+                                                value={form.demoPhone}
+                                                onChange={(e) => setForm((current) => ({ ...current, demoPhone: e.target.value }))}
+                                                placeholder="+94703815868"
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
                                             <label>Risk Level *</label>
                                             <div className="risk-button-grid">
                                                 {RISK_LEVELS.map((level) => (
@@ -376,7 +395,7 @@ const AdminAlertsManagement = () => {
 
                                         <button type="submit" disabled={dispatching} className="admin-primary-button full-width">
                                             <Send size={17} />
-                                            {dispatching ? 'Dispatching...' : 'Send Alert Now'}
+                                            {dispatching ? 'Dispatching...' : demoPhone ? 'Send Demo SMS' : 'Send Alert Now'}
                                         </button>
                                     </form>
 

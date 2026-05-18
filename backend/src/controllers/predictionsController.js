@@ -205,7 +205,7 @@ exports.generateLivePrediction = async (req, res) => {
 
     // 5. Invoke Python ML model
     const pythonPath = getPythonPath();
-    const scriptPath = path.resolve(__dirname, '../../../ml/predict_lstm.py');
+    const scriptPath = path.resolve(__dirname, '../../../ml/predict_rf.py');
     
     console.log("Invoking ML Service with 14-day sequence...");
     const pyProcess = spawn(pythonPath, [scriptPath]);

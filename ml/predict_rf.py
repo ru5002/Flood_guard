@@ -1,9 +1,9 @@
 """
-Backward-compatible live prediction entrypoint for the FloodGuard backend.
+FloodGuard Random Forest live prediction entrypoint.
 
-Despite the filename, this now uses the fresh Random Forest model bundle
-trained by ml/train.py. The backend already calls predict_lstm.py, so keeping
-this path avoids touching the frontend or route contract.
+Loads the trained Random Forest model bundle from ml/models and predicts
+flood-risk categories for the next two days using recent water-level and
+rainfall history supplied by the Node.js backend.
 """
 
 from __future__ import annotations

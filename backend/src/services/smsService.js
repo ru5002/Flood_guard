@@ -17,8 +17,10 @@ const isTwilioConfigured = () =>
     !!(
         process.env.TWILIO_ACCOUNT_SID &&
         process.env.TWILIO_AUTH_TOKEN &&
-        (process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_MESSAGING_SERVICE_SID)
+        (process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER || process.env.TWILIO_MESSAGING_SERVICE_SID)
     );
+
+const twilioFromNumber = () => process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER;
 
 const normalizeSriLankanPhone = (phoneNumber = "") => {
     const compact = String(phoneNumber).replace(/[^\d+]/g, "");
@@ -70,7 +72,7 @@ const sendSMS = async (phoneNumber, message, meta = {}) => {
             if (process.env.TWILIO_MESSAGING_SERVICE_SID) {
                 messagePayload.messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
             } else {
-                messagePayload.from = process.env.TWILIO_FROM_NUMBER;
+                messagePayload.from = twilioFromNumber();
             }
 
             const result = await client.messages.create(messagePayload);

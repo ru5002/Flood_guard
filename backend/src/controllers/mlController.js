@@ -28,13 +28,13 @@ const latestDatasetPayload = () => {
 
 /**
  * POST /api/ml/run
- * Runs predict.py, parses JSON output, saves predictions to MongoDB.
+ * Runs the Random Forest prediction script, parses JSON output, and saves predictions to MongoDB.
  */
 exports.runModel = async (req, res) => {
-    const predictScript = path.join(__dirname, '..', '..', '..', 'ml', 'predict_lstm.py');
+    const predictScript = path.join(__dirname, '..', '..', '..', 'ml', 'predict_rf.py');
 
     if (!fs.existsSync(predictScript)) {
-        return res.status(500).json({ success: false, message: 'predict.py not found in ml/ folder.' });
+        return res.status(500).json({ success: false, message: 'predict_rf.py not found in ml/ folder.' });
     }
 
     try {
@@ -116,8 +116,8 @@ exports.ingestPredictions = async (req, res) => {
         return res.status(201).json({
             success: true,
             count: inserted.length,
-            modelVersion: predictions[0]?.modelVersion || 'v1.0-lstm',
-            message: `${inserted.length} LSTM predictions saved to database.`,
+            modelVersion: predictions[0]?.modelVersion || 'rf-aththanagalu-climate-v4',
+            message: `${inserted.length} Random Forest predictions saved to database.`,
             predictions: inserted,
         });
     } catch (err) {

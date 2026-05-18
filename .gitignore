@@ -68,3 +68,13 @@ jspm_packages/
 # Docker
 *.log
 .docker-config/
+
+# Python local environment and caches
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+# Local generated output
+frontend/dist/
+backend/ml/results/

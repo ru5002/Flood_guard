@@ -364,10 +364,10 @@ Use the following visuals. Each image should be inserted near the section where 
 | Figure 10 | Admin login page screenshot. | Section 7.2 |
 | Figure 11 | Admin user-management screenshot. | Section 7.2 |
 | Figure 12 | Docker Desktop containers screenshot showing frontend, backend, and MongoDB running. | Section 7.5 |
-| Figure 13 | Model evaluation chart or screenshot from `ml/results/prediction_plot.png`. | Section 8.2 |
+| Figure 13 | Random Forest model evaluation evidence from `ml/results/rf_metrics.json` and `ml/results/rf_classification_report.txt`. | Section 8.2 |
 | Table 1 | Functional requirements and implementation status. | Section 5.1 |
 | Table 2 | Non-functional requirements and evidence. | Section 5.2 |
-| Table 3 | Machine learning metrics: RF accuracy, balanced accuracy, macro F1, weighted F1, water-level MAE/R2, LSTM day-one/day-two MAE/RMSE/R2. | Section 8.2 |
+| Table 3 | Machine learning metrics: RF accuracy, balanced accuracy, macro F1, weighted F1, and water-level MAE/R2. | Section 8.2 |
 | Table 4 | Test summary showing unit, integration, security, manual, browser, and ML smoke tests. | Section 8.1 |
 
 ## 16. User Guide

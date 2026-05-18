@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1]
-PREDICT_SCRIPT = BASE_DIR / "ml" / "predict_lstm.py"
+PREDICT_SCRIPT = BASE_DIR / "ml" / "predict_rf.py"
 
 payload = [
     {

@@ -26,7 +26,7 @@ python ml/train.py
 ## Running Predictions
 The prediction script is used by the backend to forecast the next two days:
 ```bash
-python ml/predict_lstm.py
+python ml/predict_rf.py
 ```
 It accepts the latest 14 water-level readings through standard input and returns Day 1 and Day 2 risk predictions as JSON.
 

@@ -75,6 +75,50 @@ exports.dispatchAlert = async (req, res) => {
     }
 };
 
+exports.sendDemoAlert = async (req, res) => {
+    try {
+        const { phone, zone = "Gampaha", riskLevel = "High", title, customMessage } = req.body;
+
+        if (!phone) {
+            return res.status(400).json({ success: false, message: "phone is required." });
+        }
+
+        const validLevels = ["Critical", "High", "Moderate", "Low"];
+        if (!validLevels.includes(riskLevel)) {
+            return res.status(400).json({ success: false, message: `riskLevel must be one of: ${validLevels.join(", ")}` });
+        }
+
+        const message = customMessage?.trim() ||
+            (RISK_MESSAGES[riskLevel] ? RISK_MESSAGES[riskLevel](zone) : `Flood alert for ${zone}: ${riskLevel} risk.`);
+        const alertTitle = title?.trim() || `Demo ${riskLevel} Flood Alert - ${zone}`;
+
+        const result = await sendSMS(phone, message, {
+            zone,
+            riskLevel,
+            sentBy: req.admin?.name || req.admin?.email || "admin-demo",
+            alertTitle,
+        });
+
+        return res.status(200).json({
+            success: result.success,
+            message: result.simulated ? "Demo SMS simulated. Add Twilio credentials for real delivery." : "Demo SMS sent to the selected user.",
+            alertTitle,
+            zone,
+            riskLevel,
+            result,
+            results: {
+                sent: result.success && !result.simulated ? 1 : 0,
+                simulated: result.simulated ? 1 : 0,
+                failed: result.success ? 0 : 1,
+                total: 1,
+            },
+            twilioActive: isTwilioConfigured(),
+        });
+    } catch (err) {
+        console.error("[Alert] sendDemoAlert error:", err.message);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
 exports.getAlertHistory = async (req, res) => {
     try {
         const page  = Math.max(1, parseInt(req.query.page)  || 1);
