@@ -4,8 +4,10 @@ const alertCtrl  = require("../controllers/smsAlertController");
 const { adminAuth } = require("../middleware/adminAuth");
 
 // All routes require admin authentication
-router.post("/dispatch", adminAuth, alertCtrl.dispatchAlert);
-router.post("/demo",     adminAuth, alertCtrl.sendDemoAlert);
+router.post("/dispatch",       adminAuth, alertCtrl.dispatchAlert);
+router.post("/demo",          adminAuth, alertCtrl.sendDemoAlert);
+router.post("/email-dispatch", adminAuth, alertCtrl.dispatchEmailAlert);
+router.post("/email-demo",    adminAuth, alertCtrl.sendDemoEmailAlert);
 router.post("/rain-check", adminAuth, alertCtrl.dispatchRainForecastAlerts);
 router.post("/rain-test",  adminAuth, alertCtrl.testRainAlertToNumber);
 router.get("/history",   adminAuth, alertCtrl.getAlertHistory);

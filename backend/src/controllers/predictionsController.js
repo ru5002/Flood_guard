@@ -254,15 +254,6 @@ exports.generateLivePrediction = async (req, res) => {
         await newPrediction.save();
       }
 
-      // 7. Trigger automatic zone SMS alerts for Moderate/High/Critical risk.
-      const automaticAlerts = isDatabaseReady()
-        ? await sendAutomaticRiskAlerts([{
-          location: 'Gampaha',
-          riskLevel: immediateRisk,
-          floodProbability: result.day1.probabilities?.[result.day1.riskLevel] || 0,
-        }], { source: 'live-prediction' })
-        : null;
-
       res.json({ 
         success: true, 
         reading: isLiveWeather ? payloadData[payloadData.length - 1] : payloadData[payloadData.length - 1], 
@@ -436,9 +427,6 @@ exports.createPredictions = async (req, res) => {
 exports.getOfficialZonePredictions = async (req, res) => {
   try {
     const predictions = await buildGampahaZonePredictions();
-    const automaticAlerts = isDatabaseReady()
-      ? await sendAutomaticRiskAlerts(predictions, { source: 'official-zone-predictions' })
-      : null;
     res.json({
       success: true,
       source: 'Irrigation Department ArcGIS',
@@ -446,7 +434,6 @@ exports.getOfficialZonePredictions = async (req, res) => {
       count: predictions.length,
       generatedAt: new Date(),
       predictions,
-      automaticAlerts,
     });
   } catch (err) {
     console.error('getOfficialZonePredictions error:', err.message);

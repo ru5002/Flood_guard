@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, Home, Megaphone, RefreshCw, UserCog, CheckCircle2, MessageCircle, UserRoundPlus } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, Home, Megaphone, RefreshCw, UserCog, CheckCircle2, MessageCircle, UserRoundPlus, LogOut } from 'lucide-react';
 import '../../styles/admin.css';
 
 const AdminDashboard = () => {
@@ -64,9 +64,13 @@ const AdminDashboard = () => {
     return (
         <div className="admin-container">
             <aside className="admin-sidebar">
-                <div className="admin-logo">
-                    <h1>FLOODGUARD ADMIN</h1>
-                </div>
+                <Link to="/admin/dashboard" className="admin-logo">
+                    <img src="/floodguard-logo.png" alt="FloodGuard" className="admin-logo-mark" />
+                    <span className="admin-logo-text">
+                        <span className="admin-logo-name">FloodGuard</span>
+                        <span className="admin-logo-tag">Admin Console</span>
+                    </span>
+                </Link>
                 <nav className="admin-nav">
                     <NavLink to="/admin/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
                         <LayoutDashboard size={18} />
@@ -85,6 +89,10 @@ const AdminDashboard = () => {
                         Back to Site
                     </Link>
                 </nav>
+                <button className="btn-logout admin-sidebar-logout" onClick={handleLogout}>
+                    <LogOut size={16} />
+                    Logout
+                </button>
             </aside>
 
             <main className="admin-main admin-dashboard-page">
@@ -105,26 +113,26 @@ const AdminDashboard = () => {
 
                 <div className="admin-content">
                     <div className="dashboard-metrics">
-                        <div className="dashboard-metric-card">
-                            <Users size={20} />
+                        <div className="dashboard-metric-card tone-blue">
+                            <div className="metric-icon"><Users size={18} /></div>
                             <span>Total Users</span>
                             <strong>{stats?.totalUsers || 0}</strong>
                         </div>
 
-                        <div className="dashboard-metric-card">
-                            <CheckCircle2 size={20} />
+                        <div className="dashboard-metric-card tone-green">
+                            <div className="metric-icon"><CheckCircle2 size={18} /></div>
                             <span>Active Users</span>
                             <strong>{stats?.activeUsers || 0}</strong>
                         </div>
 
-                        <div className="dashboard-metric-card">
-                            <MessageCircle size={20} />
+                        <div className="dashboard-metric-card tone-cyan">
+                            <div className="metric-icon"><MessageCircle size={18} /></div>
                             <span>Alerts Enabled</span>
                             <strong>{stats?.alertsEnabledCount || 0}</strong>
                         </div>
 
-                        <div className="dashboard-metric-card">
-                            <UserRoundPlus size={20} />
+                        <div className="dashboard-metric-card tone-amber">
+                            <div className="metric-icon"><UserRoundPlus size={18} /></div>
                             <span>New 30 Days</span>
                             <strong>{stats?.recentRegistrations || 0}</strong>
                         </div>

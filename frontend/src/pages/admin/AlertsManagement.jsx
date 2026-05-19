@@ -73,6 +73,9 @@ const AdminAlertsManagement = () => {
         title: '',
         customMessage: '',
         demoPhone: '',
+        demoEmail: '',
+        sendSMS: true,
+        sendEmail: false,
     });
 
     const navigate = useNavigate();
@@ -142,27 +145,53 @@ const AdminAlertsManagement = () => {
     const handleDispatch = async (event) => {
         event.preventDefault();
         if (!form.zone) return alert('Please select a zone.');
+        if (!form.sendSMS && !form.sendEmail) return alert('Please select at least one channel (SMS or Email).');
 
         setDispatching(true);
         setResult(null);
 
         try {
             const demoPhone = form.demoPhone.trim();
-            const endpoint = demoPhone ? '/api/alerts/demo' : '/api/alerts/dispatch';
-            const payload = demoPhone ? { ...form, phone: demoPhone } : form;
+            const demoEmail = form.demoEmail.trim();
+            const responses = {};
 
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: authHeader(),
-                body: JSON.stringify(payload),
-            });
-            const data = await response.json();
-            setResult(data);
+            // SMS channel
+            if (form.sendSMS) {
+                const endpoint = demoPhone ? '/api/alerts/demo' : '/api/alerts/dispatch';
+                const payload = demoPhone
+                    ? { ...form, phone: demoPhone, sendEmail: false }
+                    : { ...form, sendEmail: false };
+                const res = await fetch(endpoint, { method: 'POST', headers: authHeader(), body: JSON.stringify(payload) });
+                responses.sms = await res.json();
+            }
 
-            if (data.success) {
+            // Email channel
+            if (form.sendEmail) {
+                const endpoint = demoEmail ? '/api/alerts/email-demo' : '/api/alerts/email-dispatch';
+                const payload = demoEmail
+                    ? { ...form, email: demoEmail }
+                    : form;
+                const res = await fetch(endpoint, { method: 'POST', headers: authHeader(), body: JSON.stringify(payload) });
+                responses.email = await res.json();
+            }
+
+            const combined = {
+                success: Object.values(responses).some((r) => r.success),
+                message: [
+                    responses.sms ? `SMS: ${responses.sms.message || responses.sms.error || 'Unknown SMS error'}` : null,
+                    responses.email ? `Email: ${responses.email.message || responses.email.error || 'Unknown email error'}` : null,
+                ].filter(Boolean).join(' | '),
+                results: responses.sms?.results,
+                emailResults: responses.email?.emailResults,
+                twilioActive: responses.sms?.twilioActive,
+                emailActive: responses.email?.emailActive,
+            };
+
+            setResult(combined);
+            if (combined.success) {
                 loadStats();
                 loadLogs(1);
-                setForm((current) => ({ ...current, title: '', customMessage: '' }));
+                setForm((c) => ({ ...c, title: '', customMessage: '' }));
             }
         } catch (err) {
             setResult({ success: false, message: err.message });
@@ -195,9 +224,13 @@ const AdminAlertsManagement = () => {
     return (
         <div className="admin-container">
             <aside className="admin-sidebar">
-                <div className="admin-logo">
-                    <h1>FLOODGUARD ADMIN</h1>
-                </div>
+                <Link to="/admin/dashboard" className="admin-logo">
+                    <img src="/floodguard-logo.png" alt="FloodGuard" className="admin-logo-mark" />
+                    <span className="admin-logo-text">
+                        <span className="admin-logo-name">FloodGuard</span>
+                        <span className="admin-logo-tag">Admin Console</span>
+                    </span>
+                </Link>
                 <nav className="admin-nav">
                     <NavLink to="/admin/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
                         <LayoutDashboard size={18} />
@@ -333,18 +366,62 @@ const AdminAlertsManagement = () => {
                                             </select>
                                         </div>
 
+                                        {/* Channel selector */}
                                         <div className="form-group">
-                                            <label>
-                                                Demo Recipient Phone
-                                                <span> optional: sends only to this number</span>
-                                            </label>
-                                            <input
-                                                type="tel"
-                                                value={form.demoPhone}
-                                                onChange={(e) => setForm((current) => ({ ...current, demoPhone: e.target.value }))}
-                                                placeholder="+94703815868"
-                                            />
+                                            <label>Send Via *</label>
+                                            <div className="channel-toggle-row">
+                                                <label className={`channel-toggle ${form.sendSMS ? 'active' : ''}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={form.sendSMS}
+                                                        onChange={(e) => setForm((c) => ({ ...c, sendSMS: e.target.checked }))}
+                                                    />
+                                                    <MessageSquareText size={15} />
+                                                    SMS
+                                                </label>
+                                                <label className={`channel-toggle ${form.sendEmail ? 'active' : ''}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={form.sendEmail}
+                                                        onChange={(e) => setForm((c) => ({ ...c, sendEmail: e.target.checked }))}
+                                                    />
+                                                    <Bell size={15} />
+                                                    Email
+                                                </label>
+                                            </div>
                                         </div>
+
+                                        {/* SMS demo override */}
+                                        {form.sendSMS && (
+                                            <div className="form-group">
+                                                <label>
+                                                    Demo Phone
+                                                    <span> optional — sends only to this number instead of all users</span>
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    value={form.demoPhone}
+                                                    onChange={(e) => setForm((c) => ({ ...c, demoPhone: e.target.value }))}
+                                                    placeholder="+94703815868"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Email demo override */}
+                                        {form.sendEmail && (
+                                            <div className="form-group">
+                                                <label>
+                                                    Demo Email
+                                                    <span> optional — sends only to this address instead of all users</span>
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    value={form.demoEmail}
+                                                    onChange={(e) => setForm((c) => ({ ...c, demoEmail: e.target.value }))}
+                                                    placeholder="example@gmail.com"
+                                                />
+                                            </div>
+                                        )}
 
                                         <div className="form-group">
                                             <label>Risk Level *</label>
@@ -395,7 +472,9 @@ const AdminAlertsManagement = () => {
 
                                         <button type="submit" disabled={dispatching} className="admin-primary-button full-width">
                                             <Send size={17} />
-                                            {dispatching ? 'Dispatching...' : demoPhone ? 'Send Demo SMS' : 'Send Alert Now'}
+                                            {dispatching ? 'Dispatching...' :
+                                                (form.demoPhone || form.demoEmail) ? 'Send Demo Alert' :
+                                                [form.sendSMS && 'SMS', form.sendEmail && 'Email'].filter(Boolean).join(' + ') + ' Alert Now'}
                                         </button>
                                     </form>
 

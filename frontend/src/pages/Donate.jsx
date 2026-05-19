@@ -70,6 +70,15 @@ const Donate = () => {
                 </div>
             </section>
 
+            {/* Impact image */}
+            <div className="donate-photo-band">
+                <img
+                    src="/flood_donate.png"
+                    alt="Flood relief efforts in Gampaha District"
+                    className="donate-photo"
+                />
+            </div>
+
             {/* Main content */}
             <div className="donate-body">
                 {/* Left — Donation form */}

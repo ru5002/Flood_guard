@@ -113,10 +113,16 @@
   }
   
   .emg-icon {
-    font-size: 0.9rem;
     flex-shrink: 0;
-    width: 20px;
-    text-align: center;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.55);
   }
   
   .footer-emergency span:not(.emg-icon) {
