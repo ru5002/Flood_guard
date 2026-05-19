@@ -3,11 +3,21 @@
  * Admin-only endpoints for zone-based SMS flood alert dispatch.
  */
 
-const User    = require("../models/User");
-const SMSLog  = require("../models/SMSLog");
+const User      = require("../models/User");
+const SMSLog    = require("../models/SMSLog");
+const EmailLog  = require("../models/EmailLog");
 const { sendSMS, sendBulkSMS, isTwilioConfigured } = require("../services/smsService");
 const { sendEmail, isEmailConfigured } = require("../services/emailService");
 const { fetchRainForecast, fetchAllRainForecasts, resolveForecastZone } = require("../services/weatherForecastService");
+
+const logEmail = async (email, subject, result, { zone, riskLevel, sentBy, alertTitle }) => {
+    const status = result.simulated ? "SIMULATED" : result.success ? "SENT" : "FAILED";
+    try {
+        await EmailLog.create({ email, subject, status, zone, riskLevel, sentBy, alertTitle });
+    } catch (e) {
+        console.error("[EmailLog] write failed:", e.message);
+    }
+};
 
 const buildEmailHtml = (riskLevel, zone, message, title) => {
     const colors = { Critical: '#dc2626', High: '#ea580c', Moderate: '#d97706', Low: '#2563eb' };
@@ -95,15 +105,13 @@ exports.dispatchAlert = async (req, res) => {
         // Send Email to all users who have an email address
         const emailHtml = buildEmailHtml(riskLevel, zone, message, alertTitle);
         const emailResults = { sent: 0, failed: 0, total: 0 };
+        const emailMeta = { zone, riskLevel, sentBy, alertTitle };
         for (const user of users) {
             if (!user.email) continue;
             emailResults.total++;
-            const result = await sendEmail({
-                to: user.email,
-                subject: `FloodGuard ${riskLevel} Alert — ${zone}`,
-                html: emailHtml,
-                text: message,
-            });
+            const subject = `FloodGuard ${riskLevel} Alert — ${zone}`;
+            const result = await sendEmail({ to: user.email, subject, html: emailHtml, text: message });
+            await logEmail(user.email, subject, result, emailMeta);
             if (result.success) emailResults.sent++;
             else emailResults.failed++;
         }
@@ -141,30 +149,27 @@ exports.sendDemoAlert = async (req, res) => {
 
         const message = customMessage?.trim() ||
             (RISK_MESSAGES[riskLevel] ? RISK_MESSAGES[riskLevel](zone) : `Flood alert for ${zone}: ${riskLevel} risk.`);
-        const alertTitle = title?.trim() || `Demo ${riskLevel} Flood Alert - ${zone}`;
+        const alertTitle = title?.trim() || `${riskLevel} Flood Alert - ${zone}`;
 
         // SMS
         const smsResult = await sendSMS(phone, message, {
             zone, riskLevel,
-            sentBy: req.admin?.name || req.admin?.email || "admin-demo",
+            sentBy: req.admin?.name || req.admin?.email || "admin",
             alertTitle,
         });
 
-        // Email (to demo email if provided, else skip)
+        // Email (to test email if provided, else skip)
         let emailResult = null;
         if (demoEmail) {
             const emailHtml = buildEmailHtml(riskLevel, zone, message, alertTitle);
-            emailResult = await sendEmail({
-                to: demoEmail,
-                subject: `FloodGuard ${riskLevel} Alert — ${zone}`,
-                html: emailHtml,
-                text: message,
-            });
+            const subject = `FloodGuard ${riskLevel} Alert — ${zone}`;
+            emailResult = await sendEmail({ to: demoEmail, subject, html: emailHtml, text: message });
+            await logEmail(demoEmail, subject, emailResult, { zone, riskLevel, sentBy: req.admin?.name || req.admin?.email || "admin", alertTitle });
         }
 
         return res.status(200).json({
             success: smsResult.success,
-            message: smsResult.simulated ? "Demo SMS simulated. Add Twilio credentials for real delivery." : "Demo SMS sent to the selected user.",
+            message: smsResult.simulated ? "SMS simulated. Add Twilio credentials for real delivery." : "SMS sent to the selected number.",
             alertTitle,
             zone,
             riskLevel,
@@ -206,7 +211,10 @@ exports.getAlertHistory = async (req, res) => {
 
 exports.getAlertStats = async (req, res) => {
     try {
-        const [total, byStatus, byZone, byRisk, recent] = await Promise.all([
+        const [
+            total, byStatus, byZone, byRisk, recent,
+            emailTotal, emailByStatus, emailByZone, emailByRisk, emailRecent,
+        ] = await Promise.all([
             SMSLog.countDocuments(),
             SMSLog.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
             SMSLog.aggregate([
@@ -220,9 +228,27 @@ exports.getAlertStats = async (req, res) => {
                 { $group: { _id: "$riskLevel", count: { $sum: 1 } } },
             ]),
             SMSLog.find().sort({ sentAt: -1 }).limit(5).lean(),
+
+            EmailLog.countDocuments(),
+            EmailLog.aggregate([{ $group: { _id: "$status", count: { $sum: 1 } } }]),
+            EmailLog.aggregate([
+                { $match: { zone: { $ne: null } } },
+                { $group: { _id: "$zone", count: { $sum: 1 } } },
+                { $sort: { count: -1 } },
+                { $limit: 10 },
+            ]),
+            EmailLog.aggregate([
+                { $match: { riskLevel: { $ne: null } } },
+                { $group: { _id: "$riskLevel", count: { $sum: 1 } } },
+            ]),
+            EmailLog.find().sort({ sentAt: -1 }).limit(5).lean(),
         ]);
 
-        res.json({ success: true, total, byStatus, byZone, byRisk, recent });
+        res.json({
+            success: true,
+            total, byStatus, byZone, byRisk, recent,
+            email: { total: emailTotal, byStatus: emailByStatus, byZone: emailByZone, byRisk: emailByRisk, recent: emailRecent },
+        });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -365,8 +391,12 @@ exports.dispatchEmailAlert = async (req, res) => {
 
         const html = buildEmailHtml(riskLevel, zone, message, alertTitle);
         const emailResults = { sent: 0, failed: 0, total: users.length };
+        const sentBy = req.admin?.name || req.admin?.email || "admin";
+        const emailMeta = { zone, riskLevel, sentBy, alertTitle };
         for (const user of users) {
-            const r = await sendEmail({ to: user.email, subject: `FloodGuard ${riskLevel} Alert — ${zone}`, html, text: message });
+            const subject = `FloodGuard ${riskLevel} Alert — ${zone}`;
+            const r = await sendEmail({ to: user.email, subject, html, text: message });
+            await logEmail(user.email, subject, r, emailMeta);
             if (r.success) emailResults.sent++; else emailResults.failed++;
         }
 
@@ -384,14 +414,16 @@ exports.sendDemoEmailAlert = async (req, res) => {
         if (!email) return res.status(400).json({ success: false, message: "email is required." });
 
         const message = customMessage?.trim() || (RISK_MESSAGES[riskLevel]?.(zone) ?? `Flood alert for ${zone}: ${riskLevel} risk.`);
-        const alertTitle = title?.trim() || `Demo ${riskLevel} Flood Alert - ${zone}`;
+        const alertTitle = title?.trim() || `${riskLevel} Flood Alert - ${zone}`;
         const html = buildEmailHtml(riskLevel, zone, message, alertTitle);
+        const subject = `FloodGuard ${riskLevel} Alert — ${zone}`;
 
-        const result = await sendEmail({ to: email, subject: `FloodGuard ${riskLevel} Alert — ${zone}`, html, text: message });
+        const result = await sendEmail({ to: email, subject, html, text: message });
+        await logEmail(email, subject, result, { zone, riskLevel, sentBy: req.admin?.name || req.admin?.email || "admin", alertTitle });
 
         res.json({
             success: result.success,
-            message: result.success ? `Demo email sent to ${email}.` : `Email failed: ${result.message}`,
+            message: result.success ? `Email sent to ${email}.` : `Email failed: ${result.message}`,
             alertTitle, zone, riskLevel,
             emailResults: { sent: result.success ? 1 : 0, failed: result.success ? 0 : 1, total: 1 },
             emailActive: isEmailConfigured(),

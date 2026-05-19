@@ -218,8 +218,16 @@ const AdminAlertsManagement = () => {
         [...(stats?.byRisk || [])].sort((a, b) => RISK_LEVELS.indexOf(a._id) - RISK_LEVELS.indexOf(b._id))
     ), [stats]);
 
+    const sortedEmailRiskStats = useMemo(() => (
+        [...(stats?.email?.byRisk || [])].sort((a, b) => RISK_LEVELS.indexOf(a._id) - RISK_LEVELS.indexOf(b._id))
+    ), [stats]);
+
     const maxZoneAlerts = Math.max(...(stats?.byZone || []).map((item) => item.count), 1);
     const maxRiskAlerts = Math.max(...sortedRiskStats.map((item) => item.count), 1);
+    const maxEmailZoneAlerts = Math.max(...(stats?.email?.byZone || []).map((item) => item.count), 1);
+    const maxEmailRiskAlerts = Math.max(...sortedEmailRiskStats.map((item) => item.count), 1);
+
+    const emailStatusCount = (status) => stats?.email?.byStatus?.find((item) => item._id === status)?.count || 0;
 
     return (
         <div className="admin-container">
@@ -298,26 +306,50 @@ const AdminAlertsManagement = () => {
                         <div className="stats-grid sms-stats-grid">
                             <div className="stat-card">
                                 <div className="stat-info">
-                                    <h3>Total Logs</h3>
+                                    <h3>SMS Total</h3>
                                     <p className="stat-number">{stats?.total || 0}</p>
                                 </div>
                             </div>
                             <div className="stat-card">
                                 <div className="stat-info">
-                                    <h3>Sent</h3>
+                                    <h3>SMS Sent</h3>
                                     <p className="stat-number success-number">{statusCount('SENT')}</p>
                                 </div>
                             </div>
                             <div className="stat-card">
                                 <div className="stat-info">
-                                    <h3>Simulated</h3>
+                                    <h3>SMS Simulated</h3>
                                     <p className="stat-number info-number">{statusCount('SIMULATED')}</p>
                                 </div>
                             </div>
                             <div className="stat-card">
                                 <div className="stat-info">
-                                    <h3>Failed</h3>
+                                    <h3>SMS Failed</h3>
                                     <p className="stat-number danger-number">{statusCount('FAILED')}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Email Total</h3>
+                                    <p className="stat-number">{stats?.email?.total || 0}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Email Sent</h3>
+                                    <p className="stat-number success-number">{emailStatusCount('SENT')}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Email Simulated</h3>
+                                    <p className="stat-number info-number">{emailStatusCount('SIMULATED')}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-info">
+                                    <h3>Email Failed</h3>
+                                    <p className="stat-number danger-number">{emailStatusCount('FAILED')}</p>
                                 </div>
                             </div>
                         </div>
@@ -391,11 +423,11 @@ const AdminAlertsManagement = () => {
                                             </div>
                                         </div>
 
-                                        {/* SMS demo override */}
+                                        {/* SMS single-recipient override */}
                                         {form.sendSMS && (
                                             <div className="form-group">
                                                 <label>
-                                                    Demo Phone
+                                                    Test Phone
                                                     <span> optional — sends only to this number instead of all users</span>
                                                 </label>
                                                 <input
@@ -407,11 +439,11 @@ const AdminAlertsManagement = () => {
                                             </div>
                                         )}
 
-                                        {/* Email demo override */}
+                                        {/* Email single-recipient override */}
                                         {form.sendEmail && (
                                             <div className="form-group">
                                                 <label>
-                                                    Demo Email
+                                                    Test Email
                                                     <span> optional — sends only to this address instead of all users</span>
                                                 </label>
                                                 <input
@@ -473,7 +505,7 @@ const AdminAlertsManagement = () => {
                                         <button type="submit" disabled={dispatching} className="admin-primary-button full-width">
                                             <Send size={17} />
                                             {dispatching ? 'Dispatching...' :
-                                                (form.demoPhone || form.demoEmail) ? 'Send Demo Alert' :
+                                                (form.demoPhone || form.demoEmail) ? 'Send Test Alert' :
                                                 [form.sendSMS && 'SMS', form.sendEmail && 'Email'].filter(Boolean).join(' + ') + ' Alert Now'}
                                         </button>
                                     </form>
@@ -643,8 +675,15 @@ const AdminAlertsManagement = () => {
 
                         {tab === 'stats' && stats && (
                             <div className="dashboard-sections">
+
+                                {/* ── SMS Analytics ── */}
                                 <section className="dashboard-section admin-panel">
-                                    <h2>Alerts by Zone</h2>
+                                    <div className="panel-heading">
+                                        <div>
+                                            <span className="admin-kicker">SMS</span>
+                                            <h2>SMS Alerts by Zone</h2>
+                                        </div>
+                                    </div>
                                     <div className="analytics-list">
                                         {stats.byZone?.length ? stats.byZone.map((zoneStat) => (
                                             <div key={zoneStat._id} className="analytics-row">
@@ -656,12 +695,17 @@ const AdminAlertsManagement = () => {
                                                     <span style={{ width: `${Math.max(8, (zoneStat.count / maxZoneAlerts) * 100)}%` }} />
                                                 </div>
                                             </div>
-                                        )) : <p className="muted-copy">No zone analytics yet.</p>}
+                                        )) : <p className="muted-copy">No SMS zone analytics yet.</p>}
                                     </div>
                                 </section>
 
                                 <section className="dashboard-section admin-panel">
-                                    <h2>Alerts by Risk Level</h2>
+                                    <div className="panel-heading">
+                                        <div>
+                                            <span className="admin-kicker">SMS</span>
+                                            <h2>SMS Alerts by Risk Level</h2>
+                                        </div>
+                                    </div>
                                     <div className="analytics-list">
                                         {sortedRiskStats.length ? sortedRiskStats.map((riskStat) => (
                                             <div key={riskStat._id} className="analytics-row">
@@ -673,25 +717,98 @@ const AdminAlertsManagement = () => {
                                                     <span style={{ width: `${Math.max(8, (riskStat.count / maxRiskAlerts) * 100)}%` }} />
                                                 </div>
                                             </div>
-                                        )) : <p className="muted-copy">No risk analytics yet.</p>}
+                                        )) : <p className="muted-copy">No SMS risk analytics yet.</p>}
+                                    </div>
+                                </section>
+
+                                {/* ── Email Analytics ── */}
+                                <section className="dashboard-section admin-panel">
+                                    <div className="panel-heading">
+                                        <div>
+                                            <span className="admin-kicker">Email</span>
+                                            <h2>Email Alerts by Zone</h2>
+                                        </div>
+                                    </div>
+                                    <div className="analytics-list">
+                                        {stats.email?.byZone?.length ? stats.email.byZone.map((zoneStat) => (
+                                            <div key={zoneStat._id} className="analytics-row">
+                                                <div className="analytics-row-label">
+                                                    <span>{zoneStat._id}</span>
+                                                    <strong>{zoneStat.count} emails</strong>
+                                                </div>
+                                                <div className="analytics-bar">
+                                                    <span style={{ width: `${Math.max(8, (zoneStat.count / maxEmailZoneAlerts) * 100)}%` }} />
+                                                </div>
+                                            </div>
+                                        )) : <p className="muted-copy">No email zone analytics yet.</p>}
                                     </div>
                                 </section>
 
                                 <section className="dashboard-section admin-panel">
-                                    <h2>Recent Dispatches</h2>
+                                    <div className="panel-heading">
+                                        <div>
+                                            <span className="admin-kicker">Email</span>
+                                            <h2>Email Alerts by Risk Level</h2>
+                                        </div>
+                                    </div>
+                                    <div className="analytics-list">
+                                        {sortedEmailRiskStats.length ? sortedEmailRiskStats.map((riskStat) => (
+                                            <div key={riskStat._id} className="analytics-row">
+                                                <div className="analytics-row-label">
+                                                    <span className={`risk-badge ${riskClass(riskStat._id)}`}>{riskStat._id}</span>
+                                                    <strong>{riskStat.count} emails</strong>
+                                                </div>
+                                                <div className={`analytics-bar ${riskClass(riskStat._id)}`}>
+                                                    <span style={{ width: `${Math.max(8, (riskStat.count / maxEmailRiskAlerts) * 100)}%` }} />
+                                                </div>
+                                            </div>
+                                        )) : <p className="muted-copy">No email risk analytics yet.</p>}
+                                    </div>
+                                </section>
+
+                                {/* ── Recent Dispatches ── */}
+                                <section className="dashboard-section admin-panel">
+                                    <div className="panel-heading">
+                                        <div>
+                                            <span className="admin-kicker">SMS</span>
+                                            <h2>Recent SMS Dispatches</h2>
+                                        </div>
+                                    </div>
                                     <div className="recent-list">
                                         {stats.recent?.length ? stats.recent.map((item) => (
                                             <div key={item._id} className="recent-item">
                                                 <AlertTriangle size={17} />
                                                 <div>
                                                     <strong>{item.alertTitle || `${item.riskLevel || 'Flood'} Alert`}</strong>
-                                                    <span>{item.zone || 'Unknown zone'} - {formatDateTime(item.sentAt)}</span>
+                                                    <span>{item.zone || 'Unknown zone'} — {formatDateTime(item.sentAt)}</span>
                                                 </div>
                                                 <span className={`status-pill ${statusClass(item.status)}`}>{item.status}</span>
                                             </div>
-                                        )) : <p className="muted-copy">No recent dispatches yet.</p>}
+                                        )) : <p className="muted-copy">No recent SMS dispatches yet.</p>}
                                     </div>
                                 </section>
+
+                                <section className="dashboard-section admin-panel">
+                                    <div className="panel-heading">
+                                        <div>
+                                            <span className="admin-kicker">Email</span>
+                                            <h2>Recent Email Dispatches</h2>
+                                        </div>
+                                    </div>
+                                    <div className="recent-list">
+                                        {stats.email?.recent?.length ? stats.email.recent.map((item) => (
+                                            <div key={item._id} className="recent-item">
+                                                <Bell size={17} />
+                                                <div>
+                                                    <strong>{item.alertTitle || `${item.riskLevel || 'Flood'} Alert`}</strong>
+                                                    <span>{item.zone || 'Unknown zone'} — {formatDateTime(item.sentAt)}</span>
+                                                </div>
+                                                <span className={`status-pill ${statusClass(item.status)}`}>{item.status}</span>
+                                            </div>
+                                        )) : <p className="muted-copy">No recent email dispatches yet.</p>}
+                                    </div>
+                                </section>
+
                             </div>
                         )}
                     </>
