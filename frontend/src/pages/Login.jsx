@@ -24,7 +24,104 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    // Forgot Password flow state
     const [showForgotModal, setShowForgotModal] = useState(false);
+    const [fpStep, setFpStep] = useState(1); // 1=email, 2=code+new password, 3=done
+    const [fpEmail, setFpEmail] = useState('');
+    const [fpCode, setFpCode] = useState('');
+    const [fpNewPassword, setFpNewPassword] = useState('');
+    const [fpConfirmPassword, setFpConfirmPassword] = useState('');
+    const [fpShowPassword, setFpShowPassword] = useState(false);
+    const [fpResetToken, setFpResetToken] = useState('');
+    const [fpError, setFpError] = useState('');
+    const [fpNotice, setFpNotice] = useState('');
+    const [fpLoading, setFpLoading] = useState(false);
+
+    const resetForgotState = () => {
+        setFpStep(1);
+        setFpEmail('');
+        setFpCode('');
+        setFpNewPassword('');
+        setFpConfirmPassword('');
+        setFpShowPassword(false);
+        setFpResetToken('');
+        setFpError('');
+        setFpNotice('');
+        setFpLoading(false);
+    };
+
+    const closeForgotModal = () => {
+        setShowForgotModal(false);
+        resetForgotState();
+    };
+
+    const handleRequestCode = async (e) => {
+        e.preventDefault();
+        setFpError('');
+        setFpNotice('');
+        setFpLoading(true);
+        try {
+            const res = await axios.post('/api/users/password/forgot', { email: fpEmail.trim() });
+            setFpNotice(
+                res.data?.simulated
+                    ? 'Reset code generated (SMTP not configured — check the backend console).'
+                    : 'If that email is registered, a 6-digit code was sent. Check your inbox.'
+            );
+            setFpStep(2);
+        } catch (err) {
+            setFpError(err.response?.data?.message || 'Could not send reset code. Try again.');
+        } finally {
+            setFpLoading(false);
+        }
+    };
+
+    const handleVerifyAndReset = async (e) => {
+        e.preventDefault();
+        setFpError('');
+        setFpNotice('');
+
+        if (!/^\d{6}$/.test(fpCode.trim())) {
+            setFpError('Enter the 6-digit code from your email.');
+            return;
+        }
+        if (fpNewPassword.length < 6) {
+            setFpError('New password must be at least 6 characters.');
+            return;
+        }
+        if (fpNewPassword !== fpConfirmPassword) {
+            setFpError('Passwords do not match.');
+            return;
+        }
+
+        setFpLoading(true);
+        try {
+            let resetToken = fpResetToken;
+            if (!resetToken) {
+                const verifyRes = await axios.post('/api/users/password/verify', {
+                    email: fpEmail.trim(),
+                    code: fpCode.trim(),
+                });
+                resetToken = verifyRes.data?.resetToken;
+                if (!resetToken) {
+                    setFpError('Could not verify code. Try again.');
+                    setFpLoading(false);
+                    return;
+                }
+                setFpResetToken(resetToken);
+            }
+
+            await axios.post('/api/users/password/reset', {
+                resetToken,
+                newPassword: fpNewPassword,
+            });
+            setFpStep(3);
+        } catch (err) {
+            setFpError(err.response?.data?.message || 'Could not reset password. Try again.');
+        } finally {
+            setFpLoading(false);
+        }
+    };
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -151,17 +248,106 @@ const Login = () => {
 
                     {/* Forgot Password Modal */}
                     {showForgotModal && (
-                        <div className="fp-modal-backdrop" onClick={() => setShowForgotModal(false)}>
+                        <div className="fp-modal-backdrop" onClick={closeForgotModal}>
                             <div className="fp-modal" onClick={e => e.stopPropagation()}>
-                                <div className="fp-modal-icon">🔑</div>
-                                <h3>Forgot Your Password?</h3>
-                                <p>Contact your administrator to reset your password:</p>
-                                <a href="mailto:admin@floodguard.lk" className="fp-email-link">
-                                    admin@floodguard.lk
-                                </a>
-                                <button className="fp-close-btn" onClick={() => setShowForgotModal(false)}>
-                                    Got it
-                                </button>
+                                <button
+                                    type="button"
+                                    className="fp-modal-close"
+                                    onClick={closeForgotModal}
+                                    aria-label="Close"
+                                >×</button>
+
+                                {fpStep === 1 && (
+                                    <>
+                                        <h3>Reset your password</h3>
+                                        <p className="fp-modal-sub">Enter your account email and we'll send a 6-digit reset code.</p>
+                                        {fpError && <div className="error-message">{fpError}</div>}
+                                        <form onSubmit={handleRequestCode} className="fp-form">
+                                            <input
+                                                type="email"
+                                                placeholder="you@example.com"
+                                                value={fpEmail}
+                                                onChange={(e) => setFpEmail(e.target.value)}
+                                                required
+                                                autoFocus
+                                            />
+                                            <button type="submit" className="auth-btn" disabled={fpLoading}>
+                                                {fpLoading ? 'Sending…' : 'Send reset code'}
+                                            </button>
+                                        </form>
+                                    </>
+                                )}
+
+                                {fpStep === 2 && (
+                                    <>
+                                        <h3>Enter the code</h3>
+                                        <p className="fp-modal-sub">
+                                            Sent to <strong>{fpEmail}</strong>. The code expires in 15 minutes.
+                                        </p>
+                                        {fpNotice && <div className="fp-notice">{fpNotice}</div>}
+                                        {fpError && <div className="error-message">{fpError}</div>}
+                                        <form onSubmit={handleVerifyAndReset} className="fp-form">
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                pattern="\d{6}"
+                                                maxLength={6}
+                                                placeholder="6-digit code"
+                                                value={fpCode}
+                                                onChange={(e) => setFpCode(e.target.value.replace(/\D/g, ''))}
+                                                required
+                                                autoFocus
+                                                className="fp-code-input"
+                                            />
+                                            <div className="password-field-wrap">
+                                                <input
+                                                    type={fpShowPassword ? 'text' : 'password'}
+                                                    placeholder="New password (min 6 chars)"
+                                                    value={fpNewPassword}
+                                                    onChange={(e) => setFpNewPassword(e.target.value)}
+                                                    required
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="password-toggle-btn"
+                                                    onClick={() => setFpShowPassword(v => !v)}
+                                                    aria-label={fpShowPassword ? 'Hide password' : 'Show password'}
+                                                >
+                                                    <EyeIcon open={fpShowPassword} />
+                                                </button>
+                                            </div>
+                                            <input
+                                                type={fpShowPassword ? 'text' : 'password'}
+                                                placeholder="Confirm new password"
+                                                value={fpConfirmPassword}
+                                                onChange={(e) => setFpConfirmPassword(e.target.value)}
+                                                required
+                                            />
+                                            <button type="submit" className="auth-btn" disabled={fpLoading}>
+                                                {fpLoading ? 'Updating…' : 'Set new password'}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="fp-link-btn"
+                                                onClick={() => { setFpStep(1); setFpError(''); setFpResetToken(''); }}
+                                                disabled={fpLoading}
+                                            >
+                                                Use a different email
+                                            </button>
+                                        </form>
+                                    </>
+                                )}
+
+                                {fpStep === 3 && (
+                                    <>
+                                        <div className="fp-modal-icon" aria-hidden="true">✓</div>
+                                        <h3>Password updated</h3>
+                                        <p className="fp-modal-sub">You can now log in with your new password.</p>
+                                        <button className="auth-btn" onClick={closeForgotModal}>
+                                            Back to login
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     )}

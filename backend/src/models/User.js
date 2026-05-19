@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema(
     address:       { type: String },
     isActive:      { type: Boolean, default: true },
     alertsEnabled: { type: Boolean, default: true },
+
+    // Password reset: short-lived 6-digit code (stored as hash) + expiry + attempt counter
+    resetCodeHash:    { type: String, default: null },
+    resetCodeExpires: { type: Date,   default: null },
+    resetCodeAttempts:{ type: Number, default: 0 },
   },
   { timestamps: true }
 );

@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, updateUserProfile, sendUserLocationAlert } = require('../controllers/userAuthController');
+const {
+    registerUser,
+    loginUser,
+    updateUserProfile,
+    sendUserLocationAlert,
+    requestPasswordReset,
+    verifyPasswordResetCode,
+    resetPassword,
+} = require('../controllers/userAuthController');
 
 // @route   POST api/users/register
 // @desc    Register a user
@@ -11,6 +19,21 @@ router.post('/register', registerUser);
 // @desc    Login a user
 // @access  Public
 router.post('/login', loginUser);
+
+// @route   POST api/users/password/forgot
+// @desc    Email a 6-digit reset code (always 200; no email enumeration)
+// @access  Public
+router.post('/password/forgot', requestPasswordReset);
+
+// @route   POST api/users/password/verify
+// @desc    Verify the 6-digit code; returns a short-lived reset token
+// @access  Public
+router.post('/password/verify', verifyPasswordResetCode);
+
+// @route   POST api/users/password/reset
+// @desc    Set new password using the short-lived reset token
+// @access  Public
+router.post('/password/reset', resetPassword);
 
 // @route   PUT api/users/:id
 // @desc    Update user profile
