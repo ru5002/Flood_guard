@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -67,7 +67,7 @@ const features = [
 ];
 
 const stats = [
-    { value: '1',     label: 'District Focus' },
+    { value: 'Gampaha', label: 'District Focus' },
     { value: 'Live',  label: 'Weather Data Checks' },
     { value: '74.5%', label: 'Trained Model Accuracy' },
 ];
@@ -134,7 +134,7 @@ const Home = () => {
                             </p>
 
                             <div className="hero-actions">
-                                <Link to="/map" className="btn-dark">
+                                <Link to="/predictions" className="btn-dark">
                                     View Live Map
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                                 </Link>
@@ -150,7 +150,7 @@ const Home = () => {
                                     ))}
                                 </div>
                                 <span className="social-text">
-                                    <strong>FloodGuard</strong> student project &nbsp;·&nbsp; Gampaha District focus
+                                    <strong>FloodGuard</strong>  &nbsp;·&nbsp; Gampaha District focus
                                 </span>
                             </div>
                         </div>

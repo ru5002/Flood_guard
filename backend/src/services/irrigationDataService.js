@@ -199,6 +199,24 @@ const floodProbabilityFromSnapshot = (snapshot) => {
   return 0.05;
 };
 
+const distanceKm = (a, b) => {
+  if (!a || !b) return null;
+  const toRad = (value) => value * Math.PI / 180;
+  const earthRadiusKm = 6371;
+  const dLat = toRad(b.latitude - a.latitude);
+  const dLon = toRad(b.longitude - a.longitude);
+  const lat1 = toRad(a.latitude);
+  const lat2 = toRad(b.latitude);
+  const h = Math.sin(dLat / 2) ** 2
+    + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return 2 * earthRadiusKm * Math.asin(Math.sqrt(h));
+};
+
+const stableLocationOffset = (location = '') => {
+  const hash = Array.from(location).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return ((hash % 9) - 4) / 100;
+};
+
 const riskRank = { None: 0, Low: 1, Moderate: 2, High: 3, Critical: 4, Unavailable: 0 };
 const riskLabel = ['None', 'Low', 'Moderate', 'High', 'Critical'];
 
@@ -242,15 +260,47 @@ const combineRiskSignals = (gauge, localRainfall, forecast) => {
   };
 };
 
-const combinedFloodProbability = (gauge, localRainfall, forecast, riskLevel) => {
+const combinedFloodProbability = (gauge, localRainfall, forecast, riskLevel, zone) => {
   const gaugeProbability = floodProbabilityFromSnapshot(gauge);
   const currentRain = Number(localRainfall || 0);
   const forecastRain = Number(forecast?.totalRainMm || 0);
   const forecastProbability = Number(forecast?.probability || 0) / 100;
   const rainfallProbability = Math.min(0.65, (currentRain / 30) + (forecastRain / 60) + forecastProbability * 0.35);
-  const riskFloor = { None: 0.03, Low: 0.18, Moderate: 0.38, High: 0.65, Critical: 0.9 }[riskLevel] || 0.03;
+  const riskBounds = {
+    None: { min: 0.03, base: 0.04, max: 0.16 },
+    Low: { min: 0.12, base: 0.18, max: 0.34 },
+    Moderate: { min: 0.30, base: 0.38, max: 0.62 },
+    High: { min: 0.55, base: 0.65, max: 0.86 },
+    Critical: { min: 0.82, base: 0.9, max: 0.97 },
+  }[riskLevel] || { min: 0.03, base: 0.04, max: 0.16 };
 
-  return Math.min(0.97, Math.max(riskFloor, gaugeProbability, rainfallProbability, gaugeProbability + rainfallProbability * 0.25));
+  const gaugeCoords = gauge?.coordinates
+    ? { latitude: Number(gauge.coordinates.latitude), longitude: Number(gauge.coordinates.longitude) }
+    : null;
+  const zoneCoords = zone
+    ? { latitude: Number(zone.latitude), longitude: Number(zone.longitude) }
+    : null;
+  const gaugeDistanceKm = distanceKm(zoneCoords, gaugeCoords);
+  const distanceModifier = Number.isFinite(gaugeDistanceKm)
+    ? Math.max(-0.05, 0.05 - Math.min(gaugeDistanceKm, 30) / 300)
+    : 0;
+  const localRainModifier = Math.min(0.05, currentRain / 200);
+  const forecastModifier = Math.min(0.05, forecastRain / 240);
+  const locationModifier = stableLocationOffset(zone?.location);
+
+  const blendedProbability = Math.max(
+    riskBounds.base,
+    gaugeProbability,
+    rainfallProbability,
+    gaugeProbability + rainfallProbability * 0.2
+  );
+  const adjustedProbability = blendedProbability
+    + distanceModifier
+    + localRainModifier
+    + forecastModifier
+    + locationModifier;
+
+  return Number(Math.min(riskBounds.max, Math.max(riskBounds.min, adjustedProbability)).toFixed(3));
 };
 
 const buildGampahaZonePredictions = async () => {
@@ -269,7 +319,7 @@ const buildGampahaZonePredictions = async () => {
     const forecast = forecastByZone[index] || {};
     const localRainfall = Number.isFinite(weather.rainfallMm) ? weather.rainfallMm : (gauge?.rainfallMm ?? 0);
     const risk = combineRiskSignals(gauge, localRainfall, forecast);
-    const floodProbability = combinedFloodProbability(gauge, localRainfall, forecast, risk.riskLevel);
+    const floodProbability = combinedFloodProbability(gauge, localRainfall, forecast, risk.riskLevel, zone);
 
     return {
       _id: `official-${zone.location.toLowerCase().replace(/\s+/g, '-')}`,

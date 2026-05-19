@@ -139,9 +139,13 @@ const UserManagement = () => {
     return (
         <div className="admin-container">
             <aside className="admin-sidebar">
-                <div className="admin-logo">
-                    <h1>FLOODGUARD ADMIN</h1>
-                </div>
+                <Link to="/admin/dashboard" className="admin-logo">
+                    <img src="/floodguard-logo.png" alt="FloodGuard" className="admin-logo-mark" />
+                    <span className="admin-logo-text">
+                        <span className="admin-logo-name">FloodGuard</span>
+                        <span className="admin-logo-tag">Admin Console</span>
+                    </span>
+                </Link>
                 <nav className="admin-nav">
                     <NavLink to="/admin/dashboard" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
                         <LayoutDashboard size={18} />
