@@ -1,6 +1,6 @@
 const express    = require("express");
 const router     = express.Router();
-const alertCtrl  = require("../controllers/smsAlertController");
+const alertCtrl  = require("../controllers/alertController");
 const { adminAuth } = require("../middleware/adminAuth");
 
 // All routes require admin authentication

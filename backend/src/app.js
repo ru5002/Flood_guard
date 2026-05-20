@@ -5,7 +5,7 @@ const userRoutes       = require("./routes/userRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
 const pipelineRoutes   = require("./routes/dataPipelineRoutes");
 const mlRoutes         = require("./routes/mlRoutes");
-const alertRoutes      = require("./routes/smsAlertRoutes");
+const alertRoutes      = require("./routes/alertRoutes");
 const { fetchCurrentWeather } = require("./services/liveWeatherService");
 
 const app = express();
@@ -32,7 +32,7 @@ app.use("/api/pipeline", pipelineRoutes);
 // ML model routes  (admin only – run model inference, check status)
 app.use("/api/ml", mlRoutes);
 
-// SMS alert routes  (admin only – dispatch zone alerts, view history)
+// Alert routes  (admin only – dispatch SMS/email zone alerts, view history)
 app.use("/api/alerts", alertRoutes);
 
 // Public weather proxy – avoids CORS/key issues for the frontend dashboard

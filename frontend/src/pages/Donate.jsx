@@ -38,10 +38,10 @@ const SchoolIcon = () => (
 );
 
 const impactItems = [
-    { Icon: MealIcon,    color: '#d97706', bg: '#fef3c7', amount: 'LKR 1,000',  desc: 'Provides a hot meal pack for a family of four.' },
-    { Icon: MedicalIcon, color: '#dc2626', bg: '#fee2e2', amount: 'LKR 2,500',  desc: 'Supplies an emergency medical kit for flood victims.' },
-    { Icon: ShelterIcon, color: '#0891b2', bg: '#e0f2fe', amount: 'LKR 5,000',  desc: 'Contributes to temporary shelter setup and maintenance.' },
-    { Icon: SchoolIcon,  color: '#16a34a', bg: '#dcfce7', amount: 'LKR 10,000', desc: 'Helps rebuild a damaged classroom for children.' },
+    { Icon: MealIcon,    amount: 'LKR 1,000',  desc: 'Provides a hot meal pack for a family of four.' },
+    { Icon: MedicalIcon, amount: 'LKR 2,500',  desc: 'Supplies an emergency medical kit for flood victims.' },
+    { Icon: ShelterIcon, amount: 'LKR 5,000',  desc: 'Contributes to temporary shelter setup and maintenance.' },
+    { Icon: SchoolIcon,  amount: 'LKR 10,000', desc: 'Helps rebuild a damaged classroom for children.' },
 ];
 
 const Donate = () => {
@@ -137,10 +137,7 @@ const Donate = () => {
                     <div className="impact-grid">
                         {impactItems.map((item, i) => (
                             <div className="impact-card" key={i}>
-                                <span
-                                    className="impact-icon"
-                                    style={{ background: item.bg, color: item.color }}
-                                >
+                                <span className="impact-icon">
                                     <item.Icon />
                                 </span>
                                 <div>
@@ -151,26 +148,10 @@ const Donate = () => {
                         ))}
                     </div>
 
-                    {/* Social‑proof strip */}
-                    <div className="donors-strip">
-                        <div className="donor-avatars">
-                            {[
-                                { letter: 'A', color: '#0e7490' },
-                                { letter: 'S', color: '#16a34a' },
-                                { letter: 'K', color: '#d97706' },
-                                { letter: 'R', color: '#dc2626' },
-                            ].map((d, i) => (
-                                <span
-                                    className="donor-avatar"
-                                    key={i}
-                                    style={{ background: d.color }}
-                                >
-                                    {d.letter}
-                                </span>
-                            ))}
-                        </div>
-                        <p><strong>2,340+</strong> people have donated this season</p>
-                    </div>
+                    <p className="donate-note">
+                        This is a community fundraising prototype. No payment is processed.
+                        Contact the Gampaha Disaster Management office to contribute directly.
+                    </p>
                 </div>
             </div>
             <Footer />

@@ -1,6 +1,6 @@
 /**
- * smsAlertController.js
- * Admin-only endpoints for zone-based SMS flood alert dispatch.
+ * alertController.js
+ * Admin-only endpoints for zone-based SMS and email flood alert dispatch.
  */
 
 const User      = require("../models/User");

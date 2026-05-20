@@ -64,7 +64,7 @@ const AdminLogin = () => {
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@floodguard.lk"
+                            placeholder="Enter admin email"
                             required
                         />
                     </div>

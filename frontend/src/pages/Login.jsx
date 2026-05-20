@@ -305,6 +305,7 @@ const Login = () => {
                                                     placeholder="New password (min 6 chars)"
                                                     value={fpNewPassword}
                                                     onChange={(e) => setFpNewPassword(e.target.value)}
+                                                    autoComplete="new-password"
                                                     required
                                                 />
                                                 <button
@@ -321,6 +322,7 @@ const Login = () => {
                                                 placeholder="Confirm new password"
                                                 value={fpConfirmPassword}
                                                 onChange={(e) => setFpConfirmPassword(e.target.value)}
+                                                autoComplete="new-password"
                                                 required
                                             />
                                             <button type="submit" className="auth-btn" disabled={fpLoading}>

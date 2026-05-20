@@ -4,8 +4,12 @@ const Admin = require('../models/Admin');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 
-const DEFAULT_EMAIL = 'admin@floodguard.lk';
-const DEFAULT_PASSWORD = 'admin123';
+const DEFAULT_EMAIL = process.env.ADMIN_EMAIL || 'admin@floodguard.lk';
+const DEFAULT_PASSWORD = process.env.ADMIN_PASSWORD;
+if (!DEFAULT_PASSWORD) {
+    console.error('❌ ADMIN_PASSWORD is not set in .env. Aborting seed.');
+    process.exit(1);
+}
 
 const seedAdmin = async () => {
     try {
@@ -44,10 +48,10 @@ const seedAdmin = async () => {
         const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, salt);
 
         const newAdmin = new Admin({
-            name: 'Super Admin',
+            name: 'FloodGuard Admin',
             email: email,
             password: hashedPassword,
-            role: 'super_admin',
+            role: 'floodguard_admin',
             department: 'DMC',
             permissions: ['manage_users', 'manage_alerts', 'view_analytics', 'system_settings'],
             isActive: true

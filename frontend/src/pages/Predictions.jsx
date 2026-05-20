@@ -546,6 +546,22 @@ const Predictions = () => {
                                             </div>
                                         </div>
 
+                                        <div className="signal-breakdown">
+                                            <span className="signal-label">Signal breakdown:</span>
+                                            <span
+                                                className="signal-pill"
+                                                style={{ background: `${RISK_COLORS[item.riverRisk] || RISK_COLORS.None}22`, color: RISK_COLORS[item.riverRisk] || RISK_COLORS.None, borderColor: `${RISK_COLORS[item.riverRisk] || RISK_COLORS.None}55` }}
+                                            >
+                                                Now (gauge) — {item.riverRisk || 'None'}
+                                            </span>
+                                            <span
+                                                className="signal-pill"
+                                                style={{ background: `${RISK_COLORS[item.rainfallRisk] || RISK_COLORS.None}22`, color: RISK_COLORS[item.rainfallRisk] || RISK_COLORS.None, borderColor: `${RISK_COLORS[item.rainfallRisk] || RISK_COLORS.None}55` }}
+                                            >
+                                                12h forecast — {item.rainfallRisk || 'None'}
+                                            </span>
+                                        </div>
+
                                         <div className="prob-section">
                                             <div className="prob-label">
                                                 <span>Flood Probability</span>

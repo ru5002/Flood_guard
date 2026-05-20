@@ -10,7 +10,7 @@ async function seedTestAdmin() {
     email: TEST_ADMIN_EMAIL,
     password: hashed,
     name: 'Jest Test Admin',
-    role: 'super_admin',
+    role: 'floodguard_admin',
     department: 'DMC',
     permissions: ['manage_users', 'manage_alerts', 'view_analytics', 'system_settings'],
     isActive: true,

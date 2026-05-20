@@ -423,6 +423,7 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                autoComplete="off"
                                 required
                             />
                         </div>
@@ -446,6 +447,7 @@ const UserModal = ({ user, onClose, onSuccess, zones }) => {
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 required={!user}
                                 placeholder={user ? 'Leave blank to keep current' : ''}
+                                autoComplete="new-password"
                             />
                         </div>
                     </div>

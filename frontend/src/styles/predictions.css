@@ -257,6 +257,33 @@
 .metric span { display: block; font-size: 11px; color: #94a3b8; margin-bottom: 2px; }
 .metric strong { font-size: 14px; color: #1e293b; }
 
+.signal-breakdown {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.signal-label {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.signal-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
 .prob-section .prob-label {
   display: flex;
   justify-content: space-between;

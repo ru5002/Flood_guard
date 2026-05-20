@@ -30,7 +30,7 @@ const adminAuth = async (req, res, next) => {
 
 const checkPermission = (permission) => {
     return (req, res, next) => {
-        if (req.admin.role === 'super_admin' || req.admin.permissions.includes(permission)) {
+        if (req.admin.role === 'floodguard_admin' || req.admin.permissions.includes(permission)) {
             next();
         } else {
             res.status(403).json({ error: 'Insufficient permissions.' });

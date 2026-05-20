@@ -254,6 +254,13 @@ exports.generateLivePrediction = async (req, res) => {
         await newPrediction.save();
       }
 
+      const automaticAlerts = await sendAutomaticRiskAlerts([{
+        location: LOCATION,
+        zone: LOCATION,
+        riskLevel: immediateRisk,
+        floodProbability: result.day1.probabilities?.[result.day1.riskLevel] || 0,
+      }], { source: 'live-prediction' });
+
       res.json({ 
         success: true, 
         reading: isLiveWeather ? payloadData[payloadData.length - 1] : payloadData[payloadData.length - 1], 

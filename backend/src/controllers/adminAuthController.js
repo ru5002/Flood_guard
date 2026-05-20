@@ -80,7 +80,7 @@ exports.createDefaultAdmin = async (req, res) => {
             email: 'admin@floodguard.lk',
             password: hashedPassword,
             name: 'System Administrator',
-            role: 'super_admin',
+            role: 'floodguard_admin',
             department: 'DMC',
             permissions: ['manage_users', 'manage_alerts', 'view_analytics', 'system_settings']
         });
@@ -88,12 +88,7 @@ exports.createDefaultAdmin = async (req, res) => {
         await admin.save();
         
         res.json({ 
-            message: 'Default admin created successfully',
-            credentials: {
-                email: 'admin@floodguard.lk',
-                password: 'Admin@123',
-                note: 'Please change the password after first login'
-            }
+            message: 'Default admin created successfully. Check server logs or your .env for credentials.',
         });
     } catch (error) {
         console.error('Create admin error:', error);

@@ -33,17 +33,12 @@ ML_DIR = BASE_DIR / "ml"
 RAW_DATA_PATH = BASE_DIR / "Aththanagalu Oya Hydrological Time-Series Dataset.xlsx"
 RAINFALL_DATA_PATH = ML_DIR / "data" / "raw" / "lka-rainfall-subnat-full.csv"
 CLIMATE_DATA_PATH = ML_DIR / "data" / "raw" / "Sri_Lanka_Climate_Data.csv"
-PROCESSED_DIR = ML_DIR / "data" / "processed"
 MODEL_DIR = ML_DIR / "models"
 RESULTS_DIR = ML_DIR / "results"
 
 MODEL_PATH = MODEL_DIR / "floodguard_rf_model.joblib"
 METRICS_PATH = RESULTS_DIR / "rf_metrics.json"
 REPORT_PATH = RESULTS_DIR / "rf_classification_report.txt"
-CLEANED_PATH = PROCESSED_DIR / "cleaned_dataset.csv"
-FEATURES_PATH = PROCESSED_DIR / "training_features.csv"
-DAILY_RAINFALL_PATH = PROCESSED_DIR / "gampaha_daily_rainfall.csv"
-DAILY_CLIMATE_PATH = PROCESSED_DIR / "gampaha_daily_climate.csv"
 
 LOOKBACK_DAYS = 14
 GAMPAHA_PCODE = "LK12"
@@ -87,8 +82,6 @@ def load_water_levels() -> pd.DataFrame:
     df = df.dropna(subset=["date", "water_level"])
     df = df[df["water_level"] >= 0]
     df = df.drop_duplicates(subset=["date"]).sort_values("date").reset_index(drop=True)
-
-    PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     return df[["date", "water_level"]]
 
 
@@ -134,7 +127,6 @@ def load_daily_rainfall(date_index: pd.Series) -> pd.DataFrame:
         direction="backward",
     )
     daily = daily.fillna(0)
-    daily.to_csv(DAILY_RAINFALL_PATH, index=False)
     return daily
 
 
@@ -185,7 +177,6 @@ def load_daily_climate(date_index: pd.Series) -> pd.DataFrame:
     for column in ["climate_precip_mm", "temp_max_c", "temp_min_c", "temp_mean_c"]:
         daily[column] = daily[column].ffill().bfill().fillna(0)
 
-    daily.to_csv(DAILY_CLIMATE_PATH, index=False)
     return daily
 
 
@@ -198,22 +189,6 @@ def merge_hydro_rainfall(water_levels: pd.DataFrame) -> pd.DataFrame:
     df["rain_14d"] = df["rainfall_mm_day"].rolling(14, min_periods=1).sum()
     df["climate_precip_3d"] = df["climate_precip_mm"].rolling(3, min_periods=1).sum()
     df["climate_precip_7d"] = df["climate_precip_mm"].rolling(7, min_periods=1).sum()
-    df[[
-        "date",
-        "water_level",
-        "rainfall_mm_day",
-        "rain_3d",
-        "rain_7d",
-        "rain_14d",
-        "climate_available",
-        "climate_precip_mm",
-        "climate_precip_3d",
-        "climate_precip_7d",
-        "temp_mean_c",
-    ]].to_csv(
-        CLEANED_PATH,
-        index=False,
-    )
     return df
 
 
@@ -276,7 +251,6 @@ def build_feature_frame(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
 
     feature_df = pd.DataFrame(rows)
     feature_names = [col for col in feature_df.columns if col not in {"date", "target_level", "target_risk"}]
-    feature_df.to_csv(FEATURES_PATH, index=False)
     return feature_df, feature_names
 
 
