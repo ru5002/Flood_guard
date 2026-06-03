@@ -52,6 +52,12 @@ jspm_packages/
 
 # Optional npm cache directory
 .npm
+.npm-cache/
+.vercel/
+.vercel-data/
+.vercel-config/
+.vercel-cache/
+.localappdata/
 
 # Optional eslint cache
 .eslintcache
